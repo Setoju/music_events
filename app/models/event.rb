@@ -1,4 +1,7 @@
 class Event < ApplicationRecord
+  has_many :event_artists
+  has_many :artists, through: :event_artists
+
   validates :name, presence: true
   validates :venue, presence: true
   validates :city, presence: true
