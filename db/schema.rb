@@ -10,9 +10,29 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_28_112702) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_28_133137) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "artists", force: :cascade do |t|
+    t.text "bio"
+    t.string "country"
+    t.datetime "created_at", null: false
+    t.string "genre"
+    t.string "name"
+    t.datetime "updated_at", null: false
+    t.string "website"
+  end
+
+  create_table "event_artists", force: :cascade do |t|
+    t.bigint "artist_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "event_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["artist_id"], name: "index_event_artists_on_artist_id"
+    t.index ["event_id", "artist_id"], name: "index_event_artists_on_event_id_and_artist_id", unique: true
+    t.index ["event_id"], name: "index_event_artists_on_event_id"
+  end
 
   create_table "events", force: :cascade do |t|
     t.string "city"
@@ -25,4 +45,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_28_112702) do
     t.datetime "updated_at", null: false
     t.string "venue"
   end
+
+  add_foreign_key "event_artists", "artists"
+  add_foreign_key "event_artists", "events"
 end
