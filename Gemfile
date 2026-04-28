@@ -26,6 +26,15 @@ gem "grape-entity"
 gem "grape-swagger"
 gem "rack-cors"
 
+# Rspec gems
+group :development, :test do
+  gem "rspec-rails"
+  gem "factory_bot_rails"
+  gem "faker"
+  gem "shoulda-matchers"
+  gem "database_cleaner-active_record"
+end
+
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
