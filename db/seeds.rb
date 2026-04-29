@@ -1,220 +1,241 @@
-puts "🧹 Cleaning database..."
+# This file should ensure the existence of records required to run the application in every environment (production,
+# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
+# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
+
+puts "Clearing existing data..."
+Booking.destroy_all
+Review.destroy_all
 EventArtist.destroy_all
 Event.destroy_all
 Artist.destroy_all
+User.destroy_all
+RevokedJwtToken.destroy_all
+puts "Data cleared."
 
-# ─────────────────────────────────────────
-# ARTISTS
-# ─────────────────────────────────────────
-puts "🎤 Seeding artists..."
+# ---------------------------------------------------------------------------
+# Users
+# ---------------------------------------------------------------------------
+puts "Creating users..."
 
-artists = Artist.create!([
-  {
-    name: "Kalush Orchestra",
-    genre: "Hip-Hop / Folk",
-    bio: "Ukrainian hip-hop group blending modern rap with traditional Hutsul folk music. Eurovision 2022 winners who brought Ukrainian culture to a global stage.",
-    country: "Ukraine",
-    website: "https://kaluschorchestra.com"
-  },
-  {
-    name: "Dakh Daughters",
-    genre: "Experimental",
-    bio: "An avant-garde Freak Cabaret band from Kyiv blending theater, poetry, punk, and folk into hauntingly powerful live performances.",
-    country: "Ukraine",
-    website: "https://dakhdaughters.com"
-  },
-  {
-    name: "Go_A",
-    genre: "Electronic",
-    bio: "Ukrainian electronic duo known for fusing techno beats with authentic Ukrainian folk melodies and traditional instruments.",
-    country: "Ukraine",
-    website: "https://go-a.com.ua"
-  },
-  {
-    name: "ONUKA",
-    genre: "Electronic",
-    bio: "Kyiv-based electronic artist Nata Zhyzhchenko creates ethereal soundscapes merging synthesizers with ancient Ukrainian instruments like the trembita and sopilka.",
-    country: "Ukraine",
-    website: "https://onuka.com.ua"
-  },
-  {
-    name: "DakhaBrakha",
-    genre: "Folk",
-    bio: "World-music quartet from Kyiv performing an explosive mix of Ukrainian folk with elements of African, Arabic, and Australian music. One of Ukraine's most internationally acclaimed acts.",
-    country: "Ukraine",
-    website: "https://dakhabrakha.com.ua"
-  },
-  {
-    name: "Okean Elzy",
-    genre: "Rock",
-    bio: "Legendary Ukrainian rock band led by Svyatoslav Vakarchuk, with over 30 years of anthemic rock that has shaped an entire generation of Ukrainian music lovers.",
-    country: "Ukraine",
-    website: "https://okeanelzy.com"
-  },
-  {
-    name: "Jinjer",
-    genre: "Metal",
-    bio: "Internationally acclaimed metal band from Donetsk, Ukraine. Known for vocalist Tatiana Shmailyuk's seamless switch between melodic singing and aggressive growling.",
-    country: "Ukraine",
-    website: "https://jinjer-metal.com"
-  },
-  {
-    name: "The Hardkiss",
-    genre: "Pop / Rock",
-    bio: "Stylish and powerful Kyiv-based rock trio fronted by Julia Sanina. Mixing polished pop production with rock energy and deeply emotional songwriting.",
-    country: "Ukraine",
-    website: "https://thehardkiss.com"
-  },
-  {
-    name: "Skryabin",
-    genre: "Pop / Electronic",
-    bio: "Iconic Ukrainian pop-rock band founded by the late Andriy Kuzmenko, whose witty lyrics and catchy melodies made them one of the most beloved acts in Ukrainian music history.",
-    country: "Ukraine",
-    website: "https://skryabin.ua"
-  },
-  {
-    name: "Haydamaky",
-    genre: "Folk / Punk",
-    bio: "High-energy Kyiv band combining Ukrainian folk traditions with punk rock, ska, and reggae. Famous for their electrifying live performances and politically charged lyrics.",
-    country: "Ukraine",
-    website: "https://haydamaky.com"
-  }
-])
+User.create!(
+  email: "admin@example.com",
+  password: "password",
+  password_confirmation: "password",
+  role: :admin
+)
 
-puts "✅ #{artists.count} artists created"
+user1 = User.create!(email: "user1@example.com", password: "password", password_confirmation: "password", role: :user)
+user2 = User.create!(email: "user2@example.com", password: "password", password_confirmation: "password", role: :user)
+user3 = User.create!(email: "user3@example.com", password: "password", password_confirmation: "password", role: :user)
 
-# ─────────────────────────────────────────
-# EVENTS
-# ─────────────────────────────────────────
-puts "🎶 Seeding events..."
+puts "  #{User.count} users created."
 
-events = Event.create!([
-  {
-    name: "Kyiv Electronic Nights",
-    venue: "Closer",
-    city: "Kyiv",
-    genre: "Electronic",
-    starts_at: 3.days.from_now,
-    ticket_price: 350,
-    description: "An immersive night of cutting-edge Ukrainian electronic music deep inside Kyiv's most iconic underground venue."
-  },
-  {
-    name: "Folk Roots Festival",
-    venue: "Mystetskyi Arsenal",
-    city: "Kyiv",
-    genre: "Folk",
-    starts_at: 1.week.from_now,
-    ticket_price: 450,
-    description: "A celebration of Ukrainian roots music featuring both established names and emerging folk artists across two stages."
-  },
-  {
-    name: "Lviv Jazz Weekend",
-    venue: "Dzyga Art Club",
-    city: "Lviv",
-    genre: "Jazz",
-    starts_at: 5.days.from_now,
-    ticket_price: 300,
-    description: "Three nights of world-class jazz in the heart of Lviv's cobblestone old town. Intimate venue, outstanding acoustics."
-  },
-  {
-    name: "Metal Assault Fest",
-    venue: "Bingo Concert Hall",
-    city: "Kyiv",
-    genre: "Metal",
-    starts_at: 2.weeks.from_now,
-    ticket_price: 600,
-    description: "Ukraine's heaviest metal showcase with multiple stages, merch market, and after-parties. Not for the faint-hearted."
-  },
-  {
-    name: "Rock Under the Stars",
-    venue: "Atlas Weekend Stage",
-    city: "Kyiv",
-    genre: "Rock",
-    starts_at: 10.days.from_now,
-    ticket_price: 550,
-    description: "An open-air rock extravaganza with Ukraine's biggest rock acts performing under the summer sky at the VDNH park."
-  },
-  {
-    name: "Odesa Beach Beats",
-    venue: "Ibiza Beach Club",
-    city: "Odesa",
-    genre: "Electronic",
-    starts_at: 4.days.from_now,
-    ticket_price: 400,
-    description: "Sunset DJ sets and live electronic acts right on the Black Sea shore. Dancing starts at dusk and ends at dawn."
-  },
-  {
-    name: "Experimental Sound Lab",
-    venue: "Izone Creative Space",
-    city: "Kyiv",
-    genre: "Experimental",
-    starts_at: 6.days.from_now,
-    ticket_price: 250,
-    description: "A boundary-pushing showcase of Ukraine's most avant-garde and experimental artists. Expect the unexpected."
-  },
-  {
-    name: "Kharkiv Rock Revival",
-    venue: "FreeDOM Stage",
-    city: "Kharkiv",
-    genre: "Rock",
-    starts_at: 3.weeks.from_now,
-    ticket_price: 480,
-    description: "Kharkiv's biggest rock gathering, celebrating the resilience and creative spirit of eastern Ukraine's music scene."
-  },
-  {
-    name: "Acoustic Winter Evening",
-    venue: "Palats Ukraina",
-    city: "Kyiv",
-    genre: "Folk",
-    starts_at: 1.month.from_now,
-    ticket_price: 700,
-    description: "An intimate acoustic evening in Kyiv's grandest concert hall — expect stripped-back performances and emotional storytelling."
-  },
-  {
-    name: "Dnipro Punk Fiesta",
-    venue: "Live Stage Club",
-    city: "Dnipro",
-    genre: "Folk / Punk",
-    starts_at: 2.weeks.from_now,
-    ticket_price: 200,
-    description: "A rowdy, high-energy punk celebration on the banks of the Dnipro river. Crowd-surfing strongly encouraged."
-  }
-])
+# ---------------------------------------------------------------------------
+# Artists
+# ---------------------------------------------------------------------------
+puts "Creating artists..."
 
-puts "✅ #{events.count} events created"
+rockers = Artist.create!(
+  name: "The Rockers",
+  genre: "Rock",
+  bio: "A legendary rock band known for their explosive energy and sold-out arena tours.",
+  country: "USA",
+  website: "https://therockers.com"
+)
 
-# ─────────────────────────────────────────
-# EVENT <-> ARTIST ASSOCIATIONS
-# ─────────────────────────────────────────
-puts "🔗 Linking artists to events..."
+jazz_collective = Artist.create!(
+  name: "Jazz Fusion Collective",
+  genre: "Jazz",
+  bio: "Blending traditional European jazz with contemporary electronic textures.",
+  country: "France",
+  website: "https://jazzfusion.com"
+)
 
-event_by_name   = ->(name)  { events.find   { |e| e.name == name } }
-artist_by_name  = ->(name)  { artists.find  { |a| a.name == name } }
+pop_sensations = Artist.create!(
+  name: "Pop Sensations",
+  genre: "Pop",
+  bio: "Chart-topping pop artists with catchy tunes and dazzling stage productions.",
+  country: "UK",
+  website: "https://popsensations.com"
+)
 
-links = [
-  [ "Kyiv Electronic Nights",    [ "Go_A", "ONUKA" ] ],
-  [ "Folk Roots Festival",       [ "DakhaBrakha", "Haydamaky", "Dakh Daughters" ] ],
-  [ "Lviv Jazz Weekend",         [ "ONUKA" ] ],
-  [ "Metal Assault Fest",        [ "Jinjer", "Haydamaky" ] ],
-  [ "Rock Under the Stars",      [ "Okean Elzy", "The Hardkiss", "Skryabin" ] ],
-  [ "Odesa Beach Beats",         [ "Go_A", "ONUKA" ] ],
-  [ "Experimental Sound Lab",    [ "Dakh Daughters", "Kalush Orchestra" ] ],
-  [ "Kharkiv Rock Revival",      [ "Jinjer", "Okean Elzy", "The Hardkiss" ] ],
-  [ "Acoustic Winter Evening",   [ "DakhaBrakha", "Dakh Daughters" ] ],
-  [ "Dnipro Punk Fiesta",        [ "Haydamaky", "Kalush Orchestra" ] ]
-]
+indie_bloom = Artist.create!(
+  name: "Indie Bloom",
+  genre: "Indie",
+  bio: "An emerging indie act celebrated for heartfelt lyrics and dreamy guitar work.",
+  country: "Ukraine",
+  website: "https://indiebloom.ua"
+)
 
-links.each do |event_name, artist_names|
-  ev = event_by_name.call(event_name)
-  artist_names.each do |artist_name|
-    ar = artist_by_name.call(artist_name)
-    EventArtist.create!(event: ev, artist: ar)
-  end
+electronic_pulse = Artist.create!(
+  name: "Electronic Pulse",
+  genre: "Electronic",
+  bio: "A DJ duo pushing the boundaries of techno and ambient electronica.",
+  country: "Germany",
+  website: "https://electronicpulse.de"
+)
+
+puts "  #{Artist.count} artists created."
+
+# ---------------------------------------------------------------------------
+# Events — future (bookable)
+# ---------------------------------------------------------------------------
+puts "Creating upcoming events..."
+
+rock_fest = Event.create!(
+  name: "Rock Fest 2026",
+  venue: "Arena Stage",
+  city: "Kyiv",
+  genre: "Rock",
+  starts_at: 1.week.from_now,
+  ticket_price: 50.00,
+  tickets_capacity: 100,
+  description: "The biggest rock festival of the year — three stages, twelve bands, one unforgettable night."
+)
+
+jazz_night = Event.create!(
+  name: "Summer Jazz Night",
+  venue: "City Hall",
+  city: "Lviv",
+  genre: "Jazz",
+  starts_at: 2.weeks.from_now,
+  ticket_price: 75.00,
+  tickets_capacity: 50,
+  description: "An intimate evening of soulful jazz in the heart of Lviv's historic City Hall."
+)
+
+pop_extravaganza = Event.create!(
+  name: "Pop Extravaganza",
+  venue: "Olympic Stadium",
+  city: "Kyiv",
+  genre: "Pop",
+  starts_at: 3.weeks.from_now,
+  ticket_price: 60.00,
+  tickets_capacity: 200,
+  description: "Experience the biggest pop hits live under one roof."
+)
+
+electronic_rave = Event.create!(
+  name: "Electric Nights",
+  venue: "Closer Club",
+  city: "Kyiv",
+  genre: "Electronic",
+  starts_at: 10.days.from_now,
+  ticket_price: 35.00,
+  tickets_capacity: 150,
+  description: "An all-night electronic music experience featuring cutting-edge visuals and sound."
+)
+
+# ---------------------------------------------------------------------------
+# Events — past (reviewable)
+# ---------------------------------------------------------------------------
+puts "Creating past events..."
+
+indie_showcase = Event.create!(
+  name: "Indie Showcase",
+  venue: "Small Venue",
+  city: "Kyiv",
+  genre: "Indie",
+  starts_at: 1.week.ago,
+  ticket_price: 25.00,
+  tickets_capacity: 30,
+  description: "A cosy evening spotlighting the best emerging indie talent in Ukraine."
+)
+
+jazz_classics = Event.create!(
+  name: "Jazz Classics Evening",
+  venue: "Philharmonic Hall",
+  city: "Odesa",
+  genre: "Jazz",
+  starts_at: 3.weeks.ago,
+  ticket_price: 80.00,
+  tickets_capacity: 120,
+  description: "A tribute to the golden age of jazz — timeless standards performed with modern flair."
+)
+
+rock_throwback = Event.create!(
+  name: "Rock Throwback Night",
+  venue: "Stadium",
+  city: "Kharkiv",
+  genre: "Rock",
+  starts_at: 2.months.ago,
+  ticket_price: 45.00,
+  tickets_capacity: 80,
+  description: "All the classic rock anthems you grew up with, played live."
+)
+
+puts "  #{Event.count} events created (#{Event.where('starts_at > ?', Time.current).count} upcoming, #{Event.where('starts_at <= ?', Time.current).count} past)."
+
+# ---------------------------------------------------------------------------
+# Event ↔ Artist assignments
+# ---------------------------------------------------------------------------
+puts "Assigning artists to events..."
+
+EventArtist.create!(event: rock_fest,         artist: rockers)
+EventArtist.create!(event: rock_fest,         artist: pop_sensations)   # co-headliner
+EventArtist.create!(event: jazz_night,        artist: jazz_collective)
+EventArtist.create!(event: pop_extravaganza,  artist: pop_sensations)
+EventArtist.create!(event: electronic_rave,   artist: electronic_pulse)
+EventArtist.create!(event: indie_showcase,    artist: indie_bloom)
+EventArtist.create!(event: indie_showcase,    artist: rockers)           # surprise guest
+EventArtist.create!(event: jazz_classics,     artist: jazz_collective)
+EventArtist.create!(event: rock_throwback,    artist: rockers)
+
+puts "  #{EventArtist.count} artist–event links created."
+
+# ---------------------------------------------------------------------------
+# Bookings
+# ---------------------------------------------------------------------------
+puts "Creating bookings..."
+
+# Upcoming events
+Booking.create_for!(user: user1, event: rock_fest,        quantity: 2)
+Booking.create_for!(user: user2, event: jazz_night,       quantity: 1)
+Booking.create_for!(user: user3, event: pop_extravaganza, quantity: 3)
+Booking.create_for!(user: user1, event: electronic_rave,  quantity: 2)
+Booking.create_for!(user: user3, event: rock_fest,        quantity: 1)
+
+# Past events — bypass the "event has already started" validation so we can
+# backfill historical bookings that reviews depend on.
+[
+  { user: user1, event: indie_showcase },
+  { user: user2, event: indie_showcase },
+  { user: user3, event: indie_showcase },
+  { user: user1, event: jazz_classics },
+  { user: user2, event: jazz_classics },
+  { user: user1, event: rock_throwback },
+  { user: user3, event: rock_throwback }
+].each do |attrs|
+  booking = Booking.new(attrs)
+  booking.save!(validate: false)
 end
 
-puts "✅ #{EventArtist.count} artist-event links created"
+puts "  #{Booking.count} bookings created."
+
+# ---------------------------------------------------------------------------
+# Reviews  (only on past events, only from users who booked)
+# ---------------------------------------------------------------------------
+puts "Creating reviews..."
+
+# Indie Showcase — 3 reviews
+Review.create!(user: user1, event: indie_showcase, rating: :perfect, comment: "Absolutely loved the indie vibe! Indie Bloom were phenomenal — genuinely one of the best gigs I've attended.")
+Review.create!(user: user2, event: indie_showcase, rating: :good,    comment: "Really solid show. The sound quality in the second half was great; first half felt a bit muddy.")
+Review.create!(user: user3, event: indie_showcase, rating: :perfect, comment: "What a surprise set from The Rockers at the end. The whole crowd went wild. Will definitely be back next year.")
+
+# Jazz Classics Evening — 2 reviews
+Review.create!(user: user1, event: jazz_classics, rating: :perfect, comment: "Philharmonic Hall is the perfect venue for jazz. The acoustics are extraordinary and the setlist was impeccable.")
+Review.create!(user: user2, event: jazz_classics, rating: :good,    comment: "Beautiful evening overall. A couple of the arrangements felt overly safe, but the musicianship was top-tier.")
+
+# Rock Throwback Night — 2 reviews
+Review.create!(user: user1, event: rock_throwback, rating: :good,    comment: "Classic setlist and a lively crowd. Stadium could use better sound mixing but the energy more than made up for it.")
+Review.create!(user: user3, event: rock_throwback, rating: :perfect, comment: "Hearing those anthems live brought back so many memories. The Rockers still have it after all these years.")
+
+puts "  #{Review.count} reviews created."
+
 puts ""
-puts "🎸 Seed complete!"
-puts "   Artists : #{Artist.count}"
-puts "   Events  : #{Event.count}"
-puts "   Links   : #{EventArtist.count}"
+puts "Seed data created successfully!"
+puts "  Users:        #{User.count}"
+puts "  Artists:      #{Artist.count}"
+puts "  Events:       #{Event.count}"
+puts "  Bookings:     #{Booking.count}"
+puts "  Reviews:      #{Review.count}"
