@@ -26,7 +26,7 @@ RSpec.describe "Auth API", type: :request do
     it "returns token for valid credentials" do
       post "/api/v1/auth/sign_in", params: { email: "login@example.com", password: "password123" }
 
-      expect([200, 201]).to include(response.status)
+      expect([ 200, 201 ]).to include(response.status)
       body = JSON.parse(response.body)
       expect(body["token"]).to be_present
     end
