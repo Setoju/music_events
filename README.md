@@ -1,24 +1,57 @@
-# README
+# Music Events API
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+## Setup
 
-Things you may want to cover:
+```bash
+bundle install
+bundle exec rails db:migrate
+bundle exec rails s
+```
 
-* Ruby version
+## Authentication (JWT Bearer Token)
 
-* System dependencies
+1. Sign up: `POST /api/v1/auth/sign_up`
+2. Sign in: `POST /api/v1/auth/sign_in`
+3. Logout (revoke current token): `DELETE /api/v1/auth/logout`
+4. Use returned JWT in headers:
 
-* Configuration
+```http
+Authorization: Bearer <token>
+```
 
-* Database creation
+Protected endpoint example: `GET /api/v1/auth/me`
 
-* Database initialization
+JWT is validated server-side and revoked tokens are stored in denylist.
 
-* How to run the test suite
+## Roles and permissions (Pundit)
 
-* Services (job queues, cache servers, search engines, etc.)
+- **Admin**: create/update/delete events and artists.
+- **User**: book tickets, list own bookings, create/list reviews (subject to booking/event rules).
+- **Guest**: can only read events and artists.
 
-* Deployment instructions
+## Booking
 
-* ...
+- Create booking: `POST /api/v1/events/:event_id/bookings`
+- List current user bookings: `GET /api/v1/bookings`
+
+Booking rules:
+- Event must be upcoming.
+- Quantity must be positive.
+- Cannot exceed event `tickets_capacity`.
+
+## Reviews
+
+- Create review: `POST /api/v1/events/:event_id/reviews`
+- List event reviews: `GET /api/v1/events/:event_id/reviews`
+
+Review rules:
+- User must have a booking for the event.
+- Review can be created only after event start time.
+- One review per user per event.
+- Rating enum: `could_be_better`, `good`, `great`, `perfect`.
+
+## Tests
+
+```bash
+bundle exec rspec
+```
