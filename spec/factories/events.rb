@@ -6,6 +6,7 @@ FactoryBot.define do
     genre { Faker::Music.genre }
     starts_at { Faker::Time.forward(days: 30, period: :evening) }
     ticket_price { Faker::Commerce.price(range: 10.0..150.0) }
+    tickets_capacity { Faker::Number.between(from: 20, to: 200) }
     description { Faker::Lorem.paragraph(sentence_count: 3) }
   end
 end

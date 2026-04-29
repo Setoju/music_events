@@ -1,9 +1,9 @@
 FactoryBot.define do
   factory :artist do
-    sequence(:name) { |n| "Artist #{n}" }
-    genre { "Rock" }
-    bio { "Experienced live performer and songwriter." }
-    country { "Ukraine" }
-    website { "https://example.com" }
+    name { Faker::Music.band }
+    genre { Faker::Music.genre }
+    bio { Faker::Lorem.paragraph(sentence_count: 3) }
+    country { Faker::Address.country }
+    website { "https://#{Faker::Internet.domain_name}" }
   end
 end
