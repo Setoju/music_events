@@ -1,8 +1,11 @@
 module V1
   class Artists < Grape::API
+    helpers V1::Helpers::AuthHelpers
+
     resource :artists do
       desc "Get all artists"
       get do
+        authorize_record!(Artist, :index?)
         artists = Artist.all
         present artists, with: Entities::Artist
       end
@@ -13,6 +16,7 @@ module V1
       end
       get ":id" do
         artist = Artist.find(params[:id])
+        authorize_record!(artist, :show?)
         present artist, with: Entities::Artist
       end
 
@@ -25,6 +29,8 @@ module V1
         optional :website, type: String
       end
       post do
+        authenticate!
+        authorize_record!(Artist, :create?)
         artist = Artist.new(
           name: params[:name],
           genre: params[:genre],
@@ -49,7 +55,9 @@ module V1
         optional :website, type: String
       end
       put ":id" do
+        authenticate!
         artist = Artist.find(params[:id])
+        authorize_record!(artist, :update?)
         if artist.update(declared(params, include_missing: false).except("id"))
           present artist, with: Entities::Artist
         else
@@ -62,7 +70,9 @@ module V1
         requires :id, type: Integer
       end
       delete ":id" do
+        authenticate!
         artist = Artist.find(params[:id])
+        authorize_record!(artist, :destroy?)
         if artist.destroy
           { message: "Artist deleted successfully" }
         else
@@ -74,6 +84,7 @@ module V1
         desc "Get events for a specific artist"
         get "events" do
           artist = Artist.find(params[:id])
+          authorize_record!(artist, :show?)
           events = artist.events.upcoming
           present events, with: Entities::Event
         end

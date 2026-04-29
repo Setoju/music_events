@@ -11,5 +11,9 @@ class Root < Grape::API
     error!({ error: e.message }, 422)
   end
 
+  rescue_from Pundit::NotAuthorizedError do
+    error!({ error: "Forbidden" }, 403)
+  end
+
   mount V1::Base
 end
