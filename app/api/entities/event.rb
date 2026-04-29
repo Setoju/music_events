@@ -7,6 +7,8 @@ module Entities
     expose :genre
     expose :starts_at
     expose :ticket_price
+    expose :tickets_capacity
+    expose :remaining_tickets
     expose :description
   end
 end
