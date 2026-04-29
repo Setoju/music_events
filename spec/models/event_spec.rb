@@ -5,12 +5,16 @@ RSpec.describe Event, type: :model do
 
   it { is_expected.to have_many(:event_artists) }
   it { is_expected.to have_many(:artists).through(:event_artists) }
+  it { is_expected.to have_many(:bookings) }
+  it { is_expected.to have_many(:users).through(:bookings) }
+  it { is_expected.to have_many(:reviews) }
 
   it { is_expected.to validate_presence_of(:name) }
   it { is_expected.to validate_presence_of(:venue) }
   it { is_expected.to validate_presence_of(:city) }
   it { is_expected.to validate_presence_of(:starts_at) }
   it { is_expected.to validate_numericality_of(:ticket_price).is_greater_than_or_equal_to(0).allow_nil }
+  it { is_expected.to validate_numericality_of(:tickets_capacity).only_integer.is_greater_than(0) }
 
   describe ".upcoming" do
     let!(:past_event) { create(:event, starts_at: 2.days.ago) }
@@ -40,6 +44,19 @@ RSpec.describe Event, type: :model do
     it "returns only events from requested genre" do
       expect(described_class.by_genre("rock")).to contain_exactly(rock_event)
       expect(described_class.by_genre("rock")).not_to include(jazz_event)
+    end
+  end
+
+  describe "#remaining_tickets" do
+    let!(:event) { create(:event, tickets_capacity: 10) }
+
+    before do
+      create(:booking, event: event, quantity: 3)
+      create(:booking, event: event, quantity: 2)
+    end
+
+    it "returns capacity minus booked quantity" do
+      expect(event.remaining_tickets).to eq(5)
     end
   end
 end
