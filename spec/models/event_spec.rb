@@ -51,12 +51,12 @@ RSpec.describe Event, type: :model do
     let!(:event) { create(:event, tickets_capacity: 10) }
 
     before do
-      create(:booking, event: event, quantity: 3)
-      create(:booking, event: event, quantity: 2)
+      create(:booking, event: event)
+      create(:booking, event: event)
     end
 
-    it "returns capacity minus booked quantity" do
-      expect(event.remaining_tickets).to eq(5)
+    it "returns capacity minus booked bookings" do
+      expect(event.remaining_tickets).to eq(8)
     end
   end
 end

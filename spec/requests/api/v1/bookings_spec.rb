@@ -7,7 +7,7 @@ RSpec.describe "Bookings API", type: :request do
 
     it "returns unauthorized without bearer token" do
       event = create(:event)
-      post "/api/v1/events/#{event.id}/bookings", params: { quantity: 1 }
+      post "/api/v1/events/#{event.id}/bookings"
 
       expect(response).to have_http_status(:unauthorized)
     end
@@ -16,18 +16,17 @@ RSpec.describe "Bookings API", type: :request do
       event = create(:event, starts_at: 2.days.from_now, tickets_capacity: 5)
 
       expect do
-        post "/api/v1/events/#{event.id}/bookings", params: { quantity: 2 }, headers: headers
+        post "/api/v1/events/#{event.id}/bookings", headers: headers
       end.to change(Booking, :count).by(1)
 
       expect(response).to have_http_status(:created)
-      body = JSON.parse(response.body)
-      expect(body["quantity"]).to eq(2)
-      expect(event.reload.remaining_tickets).to eq(3)
+      expect(JSON.parse(response.body)["id"]).to be_present
+      expect(event.reload.remaining_tickets).to eq(4)
     end
 
     it "rejects booking for past event" do
       event = create(:event, starts_at: 1.day.ago, tickets_capacity: 5)
-      post "/api/v1/events/#{event.id}/bookings", params: { quantity: 1 }, headers: headers
+      post "/api/v1/events/#{event.id}/bookings", headers: headers
 
       expect(response).to have_http_status(422)
       expect(JSON.parse(response.body)["error"]).to include("Event has already started")
@@ -35,12 +34,12 @@ RSpec.describe "Bookings API", type: :request do
 
     it "rejects booking when not enough tickets remain" do
       event = create(:event, starts_at: 2.days.from_now, tickets_capacity: 3)
-      create(:booking, event: event, quantity: 3)
+      3.times { create(:booking, event: event) }
 
-      post "/api/v1/events/#{event.id}/bookings", params: { quantity: 1 }, headers: headers
+      post "/api/v1/events/#{event.id}/bookings", headers: headers
 
-      expect(response).to have_http_status(422)
-      expect(JSON.parse(response.body)["error"]).to include("No more tickets available")
+      expect(response).to have_http_status(409)
+      expect(JSON.parse(response.body)["error"]).to include("No tickets available for this event")
     end
   end
 

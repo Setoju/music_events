@@ -20,10 +20,10 @@ RSpec.describe Booking, type: :model do
       event = create(:event, tickets_capacity: 10)
       user = create(:user)
 
-      booking = described_class.create_for!(user: user, event: event, quantity: 3)
+      booking = described_class.create_for!(user: user, event: event)
 
       expect(booking).to be_persisted
-      expect(event.remaining_tickets).to eq(7)
+      expect(event.remaining_tickets).to eq(9)
     end
   end
 end
