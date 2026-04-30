@@ -31,6 +31,26 @@ module V1
             status 201
             present booking, with: Entities::Booking
           end
+
+          desc "Cancel booking for an upcoming event"
+          delete do
+            authenticate!
+
+            event = Event.find(params[:event_id])
+
+            booking = current_user.bookings.find_by(event_id: event.id)
+            if booking.nil?
+              error!({ error: "You don't have a booking for this event" }, 404)
+            end
+
+            if event.starts_at <= Time.current
+              error!({ error: "Cannot cancel booking for an event that has already started" }, 422)
+            end
+
+            booking.destroy!
+
+            status 204
+          end
         end
       end
     end
