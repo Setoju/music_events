@@ -90,6 +90,8 @@ rock_fest = Event.create!(
   starts_at: 1.week.from_now,
   ticket_price: 50.00,
   tickets_capacity: 100,
+  latitude: 49.4444,
+  longitude: 32.0598,
   description: "The biggest rock festival of the year — three stages, twelve bands, one unforgettable night."
 )
 
@@ -101,6 +103,8 @@ jazz_night = Event.create!(
   starts_at: 2.weeks.from_now,
   ticket_price: 75.00,
   tickets_capacity: 50,
+  latitude: 49.8383,
+  longitude: 24.0231,
   description: "An intimate evening of soulful jazz in the heart of Lviv's historic City Hall."
 )
 
@@ -112,6 +116,8 @@ pop_extravaganza = Event.create!(
   starts_at: 3.weeks.from_now,
   ticket_price: 60.00,
   tickets_capacity: 200,
+  latitude: 49.4444,
+  longitude: 32.0598,
   description: "Experience the biggest pop hits live under one roof."
 )
 
@@ -123,6 +129,8 @@ electronic_rave = Event.create!(
   starts_at: 10.days.from_now,
   ticket_price: 35.00,
   tickets_capacity: 150,
+  latitude: 49.4444,
+  longitude: 32.0598,
   description: "An all-night electronic music experience featuring cutting-edge visuals and sound."
 )
 
@@ -139,6 +147,8 @@ indie_showcase = Event.create!(
   starts_at: 1.week.ago,
   ticket_price: 25.00,
   tickets_capacity: 30,
+  latitude: 49.4444,
+  longitude: 32.0598,
   description: "A cosy evening spotlighting the best emerging indie talent in Ukraine."
 )
 
@@ -150,6 +160,8 @@ jazz_classics = Event.create!(
   starts_at: 3.weeks.ago,
   ticket_price: 80.00,
   tickets_capacity: 120,
+  latitude: 46.4825,
+  longitude: 30.7233,
   description: "A tribute to the golden age of jazz — timeless standards performed with modern flair."
 )
 
@@ -161,6 +173,8 @@ rock_throwback = Event.create!(
   starts_at: 2.months.ago,
   ticket_price: 45.00,
   tickets_capacity: 80,
+  latitude: 49.4444,
+  longitude: 32.0598,
   description: "All the classic rock anthems you grew up with, played live."
 )
 
