@@ -33,6 +33,23 @@ module V1
             status 201
             present review, with: Entities::Review
           end
+
+          desc "Edit review for event by a user with booking"
+          params do
+            requires :rating, type: Integer, values: Review::RATING_RANGE.to_a
+            optional :comment, type: String
+          end
+          put do
+            authenticate!
+            review = Review.find_by!(user_id: current_user.id, event_id: params[:event_id])
+            authorize_record!(review, :update?)
+
+            review.update!(
+              declared(params, include_missing: false).slice(:rating, :comment)
+            )
+
+            present review, with: Entities::Review
+          end
         end
       end
     end

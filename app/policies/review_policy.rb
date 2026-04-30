@@ -6,4 +6,8 @@ class ReviewPolicy < ApplicationPolicy
   def create?
     authenticated?
   end
+
+  def update?
+    authenticated?
+  end
 end
