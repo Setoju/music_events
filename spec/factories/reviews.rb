@@ -2,7 +2,7 @@ FactoryBot.define do
   factory :review do
     user
     event { create(:event, starts_at: 1.day.from_now) }
-    rating { :great }
+    rating { 4 }
     comment { Faker::Lorem.sentence(word_count: 8) }
 
     after(:build) do |review|
