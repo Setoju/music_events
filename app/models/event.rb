@@ -18,7 +18,7 @@ class Event < ApplicationRecord
   scope :by_genre, ->(genre) { where(genre: genre) }
 
   def booked_tickets
-    bookings.sum(:quantity)
+    bookings.count
   end
 
   def remaining_tickets

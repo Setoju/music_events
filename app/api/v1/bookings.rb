@@ -6,9 +6,6 @@ module V1
       route_param :event_id, type: Integer do
         resource :bookings do
           desc "Book tickets for an upcoming event"
-          params do
-            optional :quantity, type: Integer, default: 1, values: 1..20
-          end
           post do
             authenticate!
 
@@ -18,11 +15,14 @@ module V1
               error!({ error: "You have already booked this event" }, 409)
             end
 
+            if event.remaining_tickets <= 0
+              error!({ error: "No tickets available for this event" }, 409)
+            end
+
             begin
               booking = Booking.create_for!(
                 user: current_user,
-                event: event,
-                quantity: declared(params)[:quantity]
+                event: event
               )
             rescue ActiveRecord::RecordNotUnique
               error!({ error: "You have already booked this event" }, 409)
