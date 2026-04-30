@@ -1,6 +1,6 @@
 class ReviewPolicy < ApplicationPolicy
   def index?
-    authenticated?
+    true
   end
 
   def create?

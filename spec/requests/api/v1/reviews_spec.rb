@@ -117,11 +117,11 @@ RSpec.describe "Reviews API", type: :request do
     let(:user) { create(:user) }
     let(:headers) { { "Authorization" => "Bearer #{JwtToken.encode(user_id: user.id)}" } }
 
-    it "returns unauthorized without bearer token" do
+    it "returns event reviews without authentication" do
       event = create(:event)
       get "/api/v1/events/#{event.id}/reviews"
 
-      expect(response).to have_http_status(:unauthorized)
+      expect(response).to have_http_status(:ok)
     end
 
     it "returns event reviews ordered by newest first" do

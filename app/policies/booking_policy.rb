@@ -6,4 +6,8 @@ class BookingPolicy < ApplicationPolicy
   def index?
     authenticated?
   end
+
+  def destroy?
+    authenticated?
+  end
 end

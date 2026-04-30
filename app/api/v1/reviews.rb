@@ -7,7 +7,6 @@ module V1
         resource :reviews do
           desc "List event reviews"
           get do
-            authenticate!
             authorize_record!(Review, :index?)
             event = Event.find(params[:event_id])
             present event.reviews.order(created_at: :desc), with: Entities::Review
