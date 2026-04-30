@@ -1,15 +1,10 @@
 class Review < ApplicationRecord
-  enum :rating, {
-    could_be_better: 0,
-    good: 1,
-    great: 2,
-    perfect: 3
-  }
+  RATING_RANGE = 1..5
 
   belongs_to :user
   belongs_to :event
 
-  validates :rating, presence: true
+  validates :rating, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: RATING_RANGE.begin, less_than_or_equal_to: RATING_RANGE.end }
   validates :user_id, uniqueness: { scope: :event_id, message: "has already reviewed this event" }
   validate :user_must_have_booking
   validate :event_must_have_started

@@ -15,7 +15,7 @@ module V1
 
           desc "Create review for event by a user with booking"
           params do
-            requires :rating, type: String, values: Review.ratings.keys
+            requires :rating, type: Integer, values: Review::RATING_RANGE.to_a
             optional :comment, type: String
           end
           post do
