@@ -36,7 +36,7 @@ JWT is validated server-side and revoked tokens are stored in denylist.
 
 Booking rules:
 - Event must be upcoming.
-- Quantity must be positive.
+- Each booking reserves one ticket.
 - Cannot exceed event `tickets_capacity`.
 
 ## Reviews
