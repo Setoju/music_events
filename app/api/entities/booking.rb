@@ -3,7 +3,6 @@ module Entities
     expose :id
     expose :user_id
     expose :event_id
-    expose :quantity
     expose :created_at
   end
 end
