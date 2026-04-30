@@ -57,6 +57,62 @@ RSpec.describe "Reviews API", type: :request do
     end
   end
 
+  describe "PUT /api/v1/events/:event_id/reviews" do
+    let!(:user) { create(:user) }
+    let(:headers) { { "Authorization" => "Bearer #{JwtToken.encode(user_id: user.id)}" } }
+
+    it "returns unauthorized without bearer token" do
+      event = create(:event, starts_at: 1.day.from_now)
+      create(:booking, user: user, event: event)
+      event.update_column(:starts_at, 1.day.ago)
+      create(:review, user: user, event: event, rating: 4)
+
+      put "/api/v1/events/#{event.id}/reviews", params: { rating: 5 }
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it "updates the user's review" do
+      event = create(:event, starts_at: 1.day.from_now)
+      create(:booking, user: user, event: event)
+      event.update_column(:starts_at, 1.day.ago)
+      review = create(:review, user: user, event: event, rating: 4, comment: "Good show")
+
+      put "/api/v1/events/#{event.id}/reviews", params: { rating: 5, comment: "Excellent show" }, headers: headers
+
+      expect(response).to have_http_status(:ok)
+      body = JSON.parse(response.body)
+      expect(body["id"]).to eq(review.id)
+      expect(body["rating"]).to eq(5)
+      expect(body["comment"]).to eq("Excellent show")
+      expect(review.reload.rating).to eq(5)
+      expect(review.reload.comment).to eq("Excellent show")
+    end
+
+    it "returns not found when the user has not reviewed the event" do
+      event = create(:event, starts_at: 1.day.from_now)
+      create(:booking, user: user, event: event)
+      event.update_column(:starts_at, 1.day.ago)
+
+      put "/api/v1/events/#{event.id}/reviews", params: { rating: 5 }, headers: headers
+
+      expect(response).to have_http_status(:not_found)
+      expect(JSON.parse(response.body)["error"]).to include("Couldn't find Review")
+    end
+
+    it "rejects invalid ratings on edit" do
+      event = create(:event, starts_at: 1.day.from_now)
+      create(:booking, user: user, event: event)
+      event.update_column(:starts_at, 1.day.ago)
+      create(:review, user: user, event: event, rating: 4)
+
+      put "/api/v1/events/#{event.id}/reviews", params: { rating: 6 }, headers: headers
+
+      expect(response).to have_http_status(400)
+      expect(JSON.parse(response.body)).to have_key("error")
+    end
+  end
+
   describe "GET /api/v1/events/:event_id/reviews" do
     let(:user) { create(:user) }
     let(:headers) { { "Authorization" => "Bearer #{JwtToken.encode(user_id: user.id)}" } }
