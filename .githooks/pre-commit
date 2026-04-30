@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "[pre-commit] Running RSpec..."
+
+if bundle exec rspec --fail-fast; then
+  echo "[pre-commit] RSpec passed. Proceeding with commit."
+  exit 0
+else
+  echo "[pre-commit] RSpec failed. Commit blocked."
+  exit 1
+fi
