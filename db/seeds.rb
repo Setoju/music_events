@@ -218,17 +218,17 @@ puts "  #{Booking.count} bookings created."
 puts "Creating reviews..."
 
 # Indie Showcase — 3 reviews
-Review.create!(user: user1, event: indie_showcase, rating: :perfect, comment: "Absolutely loved the indie vibe! Indie Bloom were phenomenal — genuinely one of the best gigs I've attended.")
-Review.create!(user: user2, event: indie_showcase, rating: :good,    comment: "Really solid show. The sound quality in the second half was great; first half felt a bit muddy.")
-Review.create!(user: user3, event: indie_showcase, rating: :perfect, comment: "What a surprise set from The Rockers at the end. The whole crowd went wild. Will definitely be back next year.")
+Review.create!(user: user1, event: indie_showcase, rating: 5, comment: "Absolutely loved the indie vibe! Indie Bloom were phenomenal — genuinely one of the best gigs I've attended.")
+Review.create!(user: user2, event: indie_showcase, rating: 4, comment: "Really solid show. The sound quality in the second half was great; first half felt a bit muddy.")
+Review.create!(user: user3, event: indie_showcase, rating: 5, comment: "What a surprise set from The Rockers at the end. The whole crowd went wild. Will definitely be back next year.")
 
 # Jazz Classics Evening — 2 reviews
-Review.create!(user: user1, event: jazz_classics, rating: :perfect, comment: "Philharmonic Hall is the perfect venue for jazz. The acoustics are extraordinary and the setlist was impeccable.")
-Review.create!(user: user2, event: jazz_classics, rating: :good,    comment: "Beautiful evening overall. A couple of the arrangements felt overly safe, but the musicianship was top-tier.")
+Review.create!(user: user1, event: jazz_classics, rating: 5, comment: "Philharmonic Hall is the perfect venue for jazz. The acoustics are extraordinary and the setlist was impeccable.")
+Review.create!(user: user2, event: jazz_classics, rating: 4, comment: "Beautiful evening overall. A couple of the arrangements felt overly safe, but the musicianship was top-tier.")
 
 # Rock Throwback Night — 2 reviews
-Review.create!(user: user1, event: rock_throwback, rating: :good,    comment: "Classic setlist and a lively crowd. Stadium could use better sound mixing but the energy more than made up for it.")
-Review.create!(user: user3, event: rock_throwback, rating: :perfect, comment: "Hearing those anthems live brought back so many memories. The Rockers still have it after all these years.")
+Review.create!(user: user1, event: rock_throwback, rating: 4, comment: "Classic setlist and a lively crowd. Stadium could use better sound mixing but the energy more than made up for it.")
+Review.create!(user: user3, event: rock_throwback, rating: 5, comment: "Hearing those anthems live brought back so many memories. The Rockers still have it after all these years.")
 
 puts "  #{Review.count} reviews created."
 
