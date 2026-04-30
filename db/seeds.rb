@@ -189,11 +189,11 @@ puts "  #{EventArtist.count} artist–event links created."
 puts "Creating bookings..."
 
 # Upcoming events
-Booking.create_for!(user: user1, event: rock_fest,        quantity: 2)
-Booking.create_for!(user: user2, event: jazz_night,       quantity: 1)
-Booking.create_for!(user: user3, event: pop_extravaganza, quantity: 3)
-Booking.create_for!(user: user1, event: electronic_rave,  quantity: 2)
-Booking.create_for!(user: user3, event: rock_fest,        quantity: 1)
+Booking.create_for!(user: user1, event: rock_fest)
+Booking.create_for!(user: user2, event: jazz_night)
+Booking.create_for!(user: user3, event: pop_extravaganza)
+Booking.create_for!(user: user1, event: electronic_rave)
+Booking.create_for!(user: user3, event: rock_fest)
 
 # Past events — bypass the "event has already started" validation so we can
 # backfill historical bookings that reviews depend on.
