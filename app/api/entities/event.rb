@@ -4,6 +4,8 @@ module Entities
     expose :name
     expose :venue
     expose :city
+    expose :latitude
+    expose :longitude
     expose :genre
     expose :starts_at
     expose :ticket_price

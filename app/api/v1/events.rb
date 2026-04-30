@@ -49,6 +49,8 @@ module V1
         optional :ticket_price, type: BigDecimal
         optional :description, type: String
         optional :tickets_capacity, type: Integer, values: 1..10_000
+        optional :latitude, type: BigDecimal
+        optional :longitude, type: BigDecimal
       end
       post do
         authenticate!
@@ -64,6 +66,8 @@ module V1
         optional :starts_at, type: DateTime
         optional :ticket_price, type: BigDecimal
         optional :tickets_capacity, type: Integer, values: 1..10_000
+        optional :latitude, type: BigDecimal
+        optional :longitude, type: BigDecimal
       end
       put ":id" do
         authenticate!

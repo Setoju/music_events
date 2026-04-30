@@ -11,6 +11,8 @@ class Event < ApplicationRecord
   validates :starts_at, presence: true
   validates :ticket_price, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
   validates :tickets_capacity, numericality: { only_integer: true, greater_than: 0 }
+  validates :latitude, numericality: { greater_than_or_equal_to: -90, less_than_or_equal_to: 90 }, allow_nil: true
+  validates :longitude, numericality: { greater_than_or_equal_to: -180, less_than_or_equal_to: 180 }, allow_nil: true
 
   scope :upcoming, -> { where("starts_at >= ?", Time.current).order(:starts_at) }
   scope :past, -> { where("starts_at < ?", Time.current).order(starts_at: :desc) }
