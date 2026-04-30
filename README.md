@@ -39,6 +39,24 @@ Booking rules:
 - Each booking reserves one ticket.
 - Cannot exceed event `tickets_capacity`.
 
+## Event location coordinates
+
+Events now support optional venue coordinates:
+
+- `latitude` (decimal, range: `-90..90`)
+- `longitude` (decimal, range: `-180..180`)
+
+These fields are accepted in event write endpoints:
+
+- Create event: `POST /api/v1/events`
+- Update event: `PUT /api/v1/events/:id`
+
+Coordinates are also returned in event responses:
+
+- `GET /api/v1/events`
+- `GET /api/v1/events/past`
+- `GET /api/v1/events/:id`
+
 ## Reviews
 
 - Create review: `POST /api/v1/events/:event_id/reviews`
@@ -48,7 +66,7 @@ Review rules:
 - User must have a booking for the event.
 - Review can be created only after event start time.
 - One review per user per event.
-- Rating enum: `could_be_better`, `good`, `great`, `perfect`.
+- Rating is between `1..5` to implement default stars rating
 
 ## Tests
 
