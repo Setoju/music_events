@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "type": "command",
+        "windows": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./.github/scripts/block-dangerous-commands.ps1",
+        "linux": "bash ./.github/scripts/block-dangerous-commands.sh",
+        "osx": "bash ./.github/scripts/block-dangerous-commands.sh",
+        "cwd": ".",
+        "timeout": 15
+      }
+    ]
+  }
+}
