@@ -23,7 +23,7 @@
 
 ## Enforcement Policies
 
-**Pre-Commit RSpec Validation**: All commits are gated behind passing RSpec tests. The `.github/hooks/rspec-before-commit.json` hook intercepts commit operations and runs `bundle exec rspec --fail-fast`. Commits are blocked (permission: `deny`) if tests fail.
+**Pre-Commit RSpec Validation**: All commits are gated behind passing RSpec tests. Git uses `.githooks/pre-commit` (configured via `core.hooksPath=.githooks`) to run `bundle exec rspec --fail-fast`. Commits are blocked if tests fail.
 
 ## Key Constraints
 
