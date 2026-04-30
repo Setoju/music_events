@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_30_110100) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_30_121500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -67,6 +67,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_30_110100) do
     t.index ["event_id"], name: "index_reviews_on_event_id"
     t.index ["user_id", "event_id"], name: "index_reviews_on_user_id_and_event_id", unique: true
     t.index ["user_id"], name: "index_reviews_on_user_id"
+    t.check_constraint "rating >= 1 AND rating <= 5", name: "reviews_rating_between_1_and_5"
   end
 
   create_table "revoked_jwt_tokens", force: :cascade do |t|
