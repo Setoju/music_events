@@ -44,7 +44,11 @@ RSpec.describe "Events API", type: :request do
 
   describe "POST /api/v1/events" do
     it "allows admin to create an event" do
-      params = attributes_for(:event).merge(starts_at: 2.days.from_now.iso8601)
+      params = attributes_for(:event).merge(
+        starts_at: 2.days.from_now.iso8601,
+        latitude: 51.5074,
+        longitude: -0.1278
+      )
 
       expect do
         post "/api/v1/events", params: params, headers: admin_headers
@@ -54,6 +58,8 @@ RSpec.describe "Events API", type: :request do
       body = JSON.parse(response.body)
       expect(body["name"]).to eq(params[:name])
       expect(body["city"]).to eq(params[:city])
+      expect(body["latitude"].to_f).to be_within(0.0001).of(51.5074)
+      expect(body["longitude"].to_f).to be_within(0.0001).of(-0.1278)
     end
 
     it "forbids regular user from creating an event" do
@@ -73,10 +79,12 @@ RSpec.describe "Events API", type: :request do
     let!(:event) { create(:event, name: "Old Name") }
 
     it "allows admin to update an event" do
-      put "/api/v1/events/#{event.id}", params: { name: "New Name" }, headers: admin_headers
+      put "/api/v1/events/#{event.id}", params: { name: "New Name", latitude: 48.8566, longitude: 2.3522 }, headers: admin_headers
 
       expect(response).to have_http_status(:ok)
       expect(event.reload.name).to eq("New Name")
+      expect(event.reload.latitude.to_f).to be_within(0.0001).of(48.8566)
+      expect(event.reload.longitude.to_f).to be_within(0.0001).of(2.3522)
       body = JSON.parse(response.body)
       expect(body["name"]).to eq("New Name")
     end
