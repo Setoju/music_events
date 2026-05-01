@@ -28,6 +28,10 @@ gem "jwt"
 gem "pundit"
 gem "rack-cors"
 
+# Security & Validation
+gem "rack-attack"
+gem "password_strength"
+
 # Rspec gems
 group :development, :test do
   gem "rspec-rails"
