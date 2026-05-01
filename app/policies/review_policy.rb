@@ -7,7 +7,15 @@ class ReviewPolicy < ApplicationPolicy
     authenticated?
   end
 
+  def show?
+    true
+  end
+
   def update?
-    authenticated?
+    authenticated? && user == record.user
+  end
+
+  def destroy?
+    authenticated? && user == record.user
   end
 end

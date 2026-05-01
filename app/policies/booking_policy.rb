@@ -7,7 +7,11 @@ class BookingPolicy < ApplicationPolicy
     authenticated?
   end
 
+  def show?
+    authenticated? && user == record.user
+  end
+
   def destroy?
-    authenticated?
+    authenticated? && user == record.user
   end
 end

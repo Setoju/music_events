@@ -34,6 +34,21 @@ module V1
         present current_user, with: Entities::User
       end
 
+      desc "Return password strength requirements"
+      get :password_requirements do
+        {
+          password_requirements: {
+            minimum_length: PasswordStrengthValidator::MINIMUM_LENGTH,
+            requirements: [
+              "At least one uppercase letter (A-Z)",
+              "At least one lowercase letter (a-z)",
+              "At least one number (0-9)",
+              "At least one special character (!@#$%^&*()_+-=[]{}|;':\"\\,.<>/?)"
+            ]
+          }
+        }
+      end
+
       desc "Logout by revoking current JWT"
       delete :logout do
         authenticate!
