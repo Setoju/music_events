@@ -5,7 +5,8 @@ module V1
     resource :events do
       route_param :event_id, type: Integer do
         resource :bookings do
-          desc "Book tickets for an upcoming event"
+          desc "Book tickets for an upcoming event",
+               success: { code: 201, entity: Entities::Booking, is_array: false }
           post do
             authenticate!
 
@@ -83,7 +84,8 @@ module V1
     end
 
     resource :bookings do
-      desc "List current user bookings"
+      desc "List current user bookings",
+           success: { code: 200, entity: Entities::Booking, is_array: true }
       get do
         authenticate!
         authorize_record!(Booking, :index?)

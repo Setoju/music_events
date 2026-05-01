@@ -3,7 +3,8 @@ module V1
     helpers V1::Helpers::AuthHelpers
 
     resource :events do
-      desc "List all upcoming events"
+      desc "List all upcoming events",
+           success: { code: 200, entity: Entities::Event, is_array: true }
       params do
         optional :city, type: String, desc: "Filter by city"
         optional :genre, type: String, desc: "Filter by genre"
@@ -16,7 +17,8 @@ module V1
         present events, with: Entities::Event
       end
 
-      desc "List all past events"
+      desc "List all past events",
+         success: { code: 200, entity: Entities::Event, is_array: true }
       params do
         optional :city, type: String, desc: "Filter by city"
         optional :genre, type: String, desc: "Filter by genre"
@@ -29,7 +31,8 @@ module V1
         present events, with: Entities::Event
       end
 
-      desc "Get a single event"
+      desc "Get a single event",
+         success: { code: 200, entity: Entities::Event, is_array: false }
       params do
         requires :id, type: Integer
       end
@@ -39,7 +42,8 @@ module V1
         present event, with: Entities::Event
       end
 
-      desc "Create an event"
+      desc "Create an event",
+         success: { code: 201, entity: Entities::Event, is_array: false }
       params do
         requires :name, type: String
         requires :venue, type: String
@@ -59,7 +63,8 @@ module V1
         present event, with: Entities::Event
       end
 
-      desc "Update an event"
+      desc "Update an event",
+         success: { code: 200, entity: Entities::Event, is_array: false }
       params do
         requires :id, type: Integer
         optional :name, :venue, :city, :genre, :description, type: String

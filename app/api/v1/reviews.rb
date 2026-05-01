@@ -5,7 +5,8 @@ module V1
     resource :events do
       route_param :event_id, type: Integer do
         resource :reviews do
-          desc "List event reviews"
+          desc "List event reviews",
+               success: { code: 200, entity: Entities::Review, is_array: true }
           get do
             authorize_record!(Review, :index?)
             event = Event.find(params[:event_id])
@@ -13,7 +14,8 @@ module V1
             present reviews, with: Entities::Review
           end
 
-          desc "Create review for event by a user with booking"
+          desc "Create review for event by a user with booking",
+               success: { code: 201, entity: Entities::Review, is_array: false }
           params do
             requires :rating, type: Integer, values: Review::RATING_RANGE.to_a
             optional :comment, type: String
@@ -34,7 +36,8 @@ module V1
             present review, with: Entities::Review
           end
 
-          desc "Edit review for event by a user with booking"
+          desc "Edit review for event by a user with booking",
+               success: { code: 200, entity: Entities::Review, is_array: false }
           params do
             requires :rating, type: Integer, values: Review::RATING_RANGE.to_a
             optional :comment, type: String

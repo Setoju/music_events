@@ -3,7 +3,8 @@ module V1
     helpers V1::Helpers::AuthHelpers
 
     resource :auth do
-      desc "Register user and return bearer token"
+      desc "Register user and return bearer token",
+           success: { code: 201, entity: Entities::AuthResponse, is_array: false }
       params do
         requires :email, type: String
         requires :password, type: String
@@ -15,7 +16,8 @@ module V1
         { token: JwtToken.encode(user_id: user.id), user: Entities::User.represent(user).as_json }
       end
 
-      desc "Authenticate user and return new bearer token"
+      desc "Authenticate user and return new bearer token",
+         success: { code: 200, entity: Entities::AuthResponse, is_array: false }
       params do
         requires :email, type: String
         requires :password, type: String
@@ -28,7 +30,8 @@ module V1
         { token: JwtToken.encode(user_id: user.id), user: Entities::User.represent(user).as_json }
       end
 
-      desc "Return current authenticated user"
+      desc "Return current authenticated user",
+         success: { code: 200, entity: Entities::User, is_array: false }
       get :me do
         authenticate!
         present current_user, with: Entities::User

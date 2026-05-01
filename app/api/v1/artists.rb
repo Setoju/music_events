@@ -3,14 +3,16 @@ module V1
     helpers V1::Helpers::AuthHelpers
 
     resource :artists do
-      desc "Get all artists"
+      desc "Get all artists",
+           success: { code: 200, entity: Entities::Artist, is_array: true }
       get do
         authorize_record!(Artist, :index?)
         artists = Artist.all
         present artists, with: Entities::Artist
       end
 
-      desc "Get an artist by ID"
+      desc "Get an artist by ID",
+         success: { code: 200, entity: Entities::Artist, is_array: false }
       params do
         requires :id, type: Integer
       end
@@ -20,7 +22,8 @@ module V1
         present artist, with: Entities::Artist
       end
 
-      desc "Create a new artist"
+      desc "Create a new artist",
+         success: { code: 201, entity: Entities::Artist, is_array: false }
       params do
         requires :name, type: String
         requires :genre, type: String
@@ -50,7 +53,8 @@ module V1
         end
       end
 
-      desc "Update an existing artist"
+      desc "Update an existing artist",
+         success: { code: 200, entity: Entities::Artist, is_array: false }
       params do
         requires :id, type: Integer
         optional :name, type: String
@@ -96,7 +100,8 @@ module V1
       end
 
       route_param :id do
-        desc "Get events for a specific artist"
+        desc "Get events for a specific artist",
+             success: { code: 200, entity: Entities::Event, is_array: true }
         get "events" do
           artist = Artist.find(params[:id])
           authorize_record!(artist, :show?)
