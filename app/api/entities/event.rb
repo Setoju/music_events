@@ -1,17 +1,19 @@
 module Entities
   class Event < Grape::Entity
-    expose :id
-    expose :name
-    expose :venue
-    expose :city
-    expose :latitude
-    expose :longitude
-    expose :genre
-    expose :starts_at
-    expose :ticket_price
-    expose :tickets_capacity
-    expose :remaining_tickets
-    expose :description
-    expose :artists, using: Entities::Artist
+    expose :id, documentation: { type: "integer", desc: "Event identifier" }
+    expose :name, documentation: { type: "string", desc: "Event name" }
+    expose :venue, documentation: { type: "string", desc: "Event venue" }
+    expose :city, documentation: { type: "string", desc: "Event city" }
+    expose :latitude, documentation: { type: "decimal", desc: "Venue latitude" }
+    expose :longitude, documentation: { type: "decimal", desc: "Venue longitude" }
+    expose :genre, documentation: { type: "string", desc: "Event genre" }
+    expose :starts_at, documentation: { type: "dateTime", desc: "Event start time" }
+    expose :ticket_price, documentation: { type: "decimal", desc: "Ticket price" }
+    expose :tickets_capacity, documentation: { type: "integer", desc: "Total tickets available" }
+    expose :remaining_tickets, documentation: { type: "integer", desc: "Tickets remaining" }
+    expose :description, documentation: { type: "string", desc: "Event description" }
+    expose :artists,
+           using: Entities::Artist,
+           documentation: { type: "Entities::Artist", is_array: true, desc: "Performing artists" }
   end
 end
