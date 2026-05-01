@@ -1,3 +1,5 @@
+require "grape-swagger"
+
 class Root < Grape::API
   prefix "api"
   version "v1", using: :path
@@ -31,4 +33,14 @@ class Root < Grape::API
   end
 
   mount V1::Base
+
+  add_swagger_documentation(
+    api_version: "v1",
+    mount_path: "/swagger_doc",
+    hide_documentation_path: true,
+    info: {
+      title: "Music Events API",
+      description: "Versioned API documentation for the Music Events service"
+    }
+  )
 end
