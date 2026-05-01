@@ -10,7 +10,7 @@ module V1
       end
       get do
         authorize_record!(Event, :index?)
-        events = Event.upcoming
+        events = Event.upcoming.includes(:artists)
         events = events.by_city(params[:city]) if params[:city]
         events = events.by_genre(params[:genre]) if params[:genre]
         present events, with: Entities::Event
@@ -23,7 +23,7 @@ module V1
       end
       get "past" do
         authorize_record!(Event, :index?)
-        events = Event.past
+        events = Event.past.includes(:artists)
         events = events.by_city(params[:city]) if params[:city]
         events = events.by_genre(params[:genre]) if params[:genre]
         present events, with: Entities::Event
@@ -34,7 +34,7 @@ module V1
         requires :id, type: Integer
       end
       get ":id" do
-        event = Event.find(params[:id])
+        event = Event.includes(:artists, :reviews).find(params[:id])
         authorize_record!(event, :show?)
         present event, with: Entities::Event
       end

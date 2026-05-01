@@ -9,7 +9,8 @@ module V1
           get do
             authorize_record!(Review, :index?)
             event = Event.find(params[:event_id])
-            present event.reviews.order(created_at: :desc), with: Entities::Review
+            reviews = event.reviews.includes(:user).order(created_at: :desc)
+            present reviews, with: Entities::Review
           end
 
           desc "Create review for event by a user with booking"
@@ -40,7 +41,7 @@ module V1
           end
           put do
             authenticate!
-            review = Review.find_by!(user_id: current_user.id, event_id: params[:event_id])
+            review = Review.includes(:user).find_by!(user_id: current_user.id, event_id: params[:event_id])
             authorize_record!(review, :update?)
 
             review.update!(
@@ -48,6 +49,16 @@ module V1
             )
 
             present review, with: Entities::Review
+          end
+
+          desc "Delete review for event by a user with booking"
+          delete do
+            authenticate!
+            review = Review.includes(:user).find_by!(user_id: current_user.id, event_id: params[:event_id])
+            authorize_record!(review, :destroy?)
+
+            review.destroy
+            status 204
           end
         end
       end

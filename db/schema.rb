@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_30_140000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_01_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -22,6 +22,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_30_140000) do
     t.string "name"
     t.datetime "updated_at", null: false
     t.string "website"
+    t.index ["genre"], name: "index_artists_on_genre"
   end
 
   create_table "bookings", force: :cascade do |t|
@@ -30,7 +31,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_30_140000) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["event_id"], name: "index_bookings_on_event_id"
-    t.index ["user_id", "event_id"], name: "index_bookings_on_user_id_and_event_id", unique: true
     t.index ["user_id"], name: "index_bookings_on_user_id"
   end
 
@@ -57,6 +57,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_30_140000) do
     t.integer "tickets_capacity", default: 100, null: false
     t.datetime "updated_at", null: false
     t.string "venue"
+    t.index ["city"], name: "index_events_on_city"
+    t.index ["genre"], name: "index_events_on_genre"
+    t.index ["starts_at"], name: "index_events_on_starts_at"
   end
 
   create_table "reviews", force: :cascade do |t|
@@ -67,6 +70,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_30_140000) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["event_id"], name: "index_reviews_on_event_id"
+    t.index ["rating"], name: "index_reviews_on_rating"
     t.index ["user_id", "event_id"], name: "index_reviews_on_user_id_and_event_id", unique: true
     t.index ["user_id"], name: "index_reviews_on_user_id"
     t.check_constraint "rating >= 1 AND rating <= 5", name: "reviews_rating_between_1_and_5"

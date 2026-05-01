@@ -12,5 +12,6 @@ module Entities
     expose :tickets_capacity
     expose :remaining_tickets
     expose :description
+    expose :artists, using: Entities::Artist
   end
 end

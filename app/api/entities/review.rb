@@ -6,5 +6,6 @@ module Entities
     expose :rating
     expose :comment
     expose :created_at
+    expose :user, using: Entities::User
   end
 end
