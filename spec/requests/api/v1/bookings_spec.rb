@@ -29,7 +29,7 @@ RSpec.describe "Bookings API", type: :request do
       post "/api/v1/events/#{event.id}/bookings", headers: headers
 
       expect(response).to have_http_status(422)
-      expect(JSON.parse(response.body)["error"]).to include("Event has already started")
+      expect(JSON.parse(response.body)["message"]).to include("Event has already started")
     end
 
     it "rejects booking when not enough tickets remain" do
@@ -39,7 +39,7 @@ RSpec.describe "Bookings API", type: :request do
       post "/api/v1/events/#{event.id}/bookings", headers: headers
 
       expect(response).to have_http_status(409)
-      expect(JSON.parse(response.body)["error"]).to include("No tickets available for this event")
+      expect(JSON.parse(response.body)["message"]).to include("No tickets available for this event")
     end
   end
 

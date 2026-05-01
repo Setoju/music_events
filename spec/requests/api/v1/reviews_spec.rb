@@ -31,7 +31,7 @@ RSpec.describe "Reviews API", type: :request do
       post "/api/v1/events/#{event.id}/reviews", params: { rating: 4 }, headers: headers
 
       expect(response).to have_http_status(422)
-      expect(JSON.parse(response.body)["error"]).to include("Only users with bookings can review this event")
+      expect(JSON.parse(response.body)["message"]).to include("Only users with bookings can review this event")
     end
 
     it "rejects review for not-started event" do
@@ -41,7 +41,7 @@ RSpec.describe "Reviews API", type: :request do
       post "/api/v1/events/#{event.id}/reviews", params: { rating: 4 }, headers: headers
 
       expect(response).to have_http_status(422)
-      expect(JSON.parse(response.body)["error"]).to include("Review can be created only after the event starts")
+      expect(JSON.parse(response.body)["message"]).to include("Review can be created only after the event starts")
     end
 
     it "rejects duplicate review from the same user" do
@@ -53,7 +53,7 @@ RSpec.describe "Reviews API", type: :request do
       post "/api/v1/events/#{event.id}/reviews", params: { rating: 4 }, headers: headers
 
       expect(response).to have_http_status(422)
-      expect(JSON.parse(response.body)["error"]).to include("User has already reviewed this event")
+      expect(JSON.parse(response.body)["message"]).to include("User has already reviewed this event")
     end
   end
 
@@ -97,7 +97,7 @@ RSpec.describe "Reviews API", type: :request do
       put "/api/v1/events/#{event.id}/reviews", params: { rating: 5 }, headers: headers
 
       expect(response).to have_http_status(:not_found)
-      expect(JSON.parse(response.body)["error"]).to include("Couldn't find Review")
+      expect(JSON.parse(response.body)["message"]).to include("Resource not found")
     end
 
     it "rejects invalid ratings on edit" do
@@ -109,6 +109,7 @@ RSpec.describe "Reviews API", type: :request do
       put "/api/v1/events/#{event.id}/reviews", params: { rating: 6 }, headers: headers
 
       expect(response).to have_http_status(400)
+      # Grape parameter validation returns error key
       expect(JSON.parse(response.body)).to have_key("error")
     end
   end

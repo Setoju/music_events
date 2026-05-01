@@ -1,8 +1,9 @@
 FactoryBot.define do
   factory :user do
     sequence(:email) { |n| "user#{n}@#{Faker::Internet.domain_name}" }
-    password { "password123" }
-    password_confirmation { "password123" }
+    # Password meets strength requirements: 12+ chars, uppercase, lowercase, number, special char
+    password { "SecurePass123!" }
+    password_confirmation { "SecurePass123!" }
     role { :user }
 
     trait :admin do
