@@ -11,12 +11,24 @@ module V1
       def authenticate!
         return if current_user
 
-        error!({ error: "Unauthorized" }, 401)
+        error_response = {
+          message: "Authentication required",
+          error_code: "unauthorized",
+          status: 401
+        }
+        error!(error_response, 401)
       end
 
       def revoke_current_token!
         payload = current_token_payload
-        error!({ error: "Unauthorized" }, 401) unless payload
+        unless payload
+          error_response = {
+            message: "Authentication required",
+            error_code: "unauthorized",
+            status: 401
+          }
+          error!(error_response, 401)
+        end
 
         RevokedJwtToken.revoke!(jti: payload[:jti], exp: Time.at(payload[:exp].to_i))
       end

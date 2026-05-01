@@ -9,14 +9,24 @@ module V1
           post do
             authenticate!
 
-            event = Event.find(params[:event_id])
+            event = Event.includes(:bookings).find(params[:event_id])
 
             if current_user.bookings.exists?(event_id: event.id)
-              error!({ error: "You have already booked this event" }, 409)
+              error_response = {
+                message: "You have already booked this event",
+                error_code: "duplicate_booking",
+                status: 409
+              }
+              error!(error_response, 409)
             end
 
             if event.remaining_tickets <= 0
-              error!({ error: "No tickets available for this event" }, 409)
+              error_response = {
+                message: "No tickets available for this event",
+                error_code: "no_tickets_available",
+                status: 409
+              }
+              error!(error_response, 409)
             end
 
             begin
@@ -25,10 +35,17 @@ module V1
                 event: event
               )
             rescue ActiveRecord::RecordNotUnique
-              error!({ error: "You have already booked this event" }, 409)
+              error_response = {
+                message: "You have already booked this event",
+                error_code: "duplicate_booking",
+                status: 409
+              }
+              error!(error_response, 409)
             end
 
             status 201
+            # Fetch with eager loading for response
+            booking = Booking.includes(:user, :event).find(booking.id)
             present booking, with: Entities::Booking
           end
 
@@ -40,11 +57,21 @@ module V1
 
             booking = current_user.bookings.find_by(event_id: event.id)
             if booking.nil?
-              error!({ error: "You don't have a booking for this event" }, 404)
+              error_response = {
+                message: "You don't have a booking for this event",
+                error_code: "booking_not_found",
+                status: 404
+              }
+              error!(error_response, 404)
             end
 
             if event.starts_at <= Time.current
-              error!({ error: "Cannot cancel booking for an event that has already started" }, 422)
+              error_response = {
+                message: "Cannot cancel booking for an event that has already started",
+                error_code: "event_already_started",
+                status: 422
+              }
+              error!(error_response, 422)
             end
 
             booking.destroy!
@@ -60,7 +87,7 @@ module V1
       get do
         authenticate!
         authorize_record!(Booking, :index?)
-        bookings = current_user.bookings.order(created_at: :desc)
+        bookings = current_user.bookings.includes(:event, :user).order(created_at: :desc)
         present bookings, with: Entities::Booking
       end
     end

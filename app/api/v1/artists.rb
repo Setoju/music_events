@@ -41,7 +41,12 @@ module V1
         if artist.save
           present artist, with: Entities::Artist
         else
-          error!({ error: artist.errors.full_messages }, 422)
+          error_response = {
+            message: artist.errors.full_messages.join(", "),
+            error_code: "validation_error",
+            status: 422
+          }
+          error!(error_response, 422)
         end
       end
 
@@ -61,7 +66,12 @@ module V1
         if artist.update(declared(params, include_missing: false).except("id"))
           present artist, with: Entities::Artist
         else
-          error!({ error: artist.errors.full_messages }, 422)
+          error_response = {
+            message: artist.errors.full_messages.join(", "),
+            error_code: "validation_error",
+            status: 422
+          }
+          error!(error_response, 422)
         end
       end
 
@@ -76,7 +86,12 @@ module V1
         if artist.destroy
           { message: "Artist deleted successfully" }
         else
-          error!({ error: "Failed to delete artist" }, 422)
+          error_response = {
+            message: "Failed to delete artist",
+            error_code: "deletion_failed",
+            status: 422
+          }
+          error!(error_response, 422)
         end
       end
 
