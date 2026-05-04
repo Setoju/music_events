@@ -19,14 +19,14 @@ puts "Creating users..."
 
 User.create!(
   email: "admin@example.com",
-  password: "password",
-  password_confirmation: "password",
+  password: "BestInTheWorld_1",
+  password_confirmation: "1BestInTheWorld_1",
   role: :admin
 )
 
-user1 = User.create!(email: "user1@example.com", password: "password", password_confirmation: "password", role: :user)
-user2 = User.create!(email: "user2@example.com", password: "password", password_confirmation: "password", role: :user)
-user3 = User.create!(email: "user3@example.com", password: "password", password_confirmation: "password", role: :user)
+user1 = User.create!(email: "user1@example.com", password: "BestInTheWorld_1", password_confirmation: "1BestInTheWorld_1", role: :user)
+user2 = User.create!(email: "user2@example.com", password: "BestInTheWorld_1", password_confirmation: "1BestInTheWorld_1", role: :user)
+user3 = User.create!(email: "user3@example.com", password: "BestInTheWorld_1", password_confirmation: "1BestInTheWorld_1", role: :user)
 
 puts "  #{User.count} users created."
 
