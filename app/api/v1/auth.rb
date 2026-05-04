@@ -24,7 +24,14 @@ module V1
       end
       post :sign_in do
         user = User.find_by(email: params[:email].to_s.downcase.strip)
-        error!({ error: "Invalid email or password" }, 401) unless user&.authenticate(params[:password])
+        unless user&.authenticate(params[:password])
+          error_response = {
+            message: "Invalid email or password",
+            error_code: "unauthorized",
+            status: 401
+          }
+          error!(error_response, 401)
+        end
 
         status 200
         { token: JwtToken.encode(user_id: user.id), user: Entities::User.represent(user).as_json }

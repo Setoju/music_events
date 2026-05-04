@@ -5,7 +5,7 @@ class Root < Grape::API
   version "v1", using: :path
   format :json
 
-  rescue_from ActiveRecord::RecordNotFound do |e|
+  rescue_from ActiveRecord::RecordNotFound do
     error_response = {
       message: "Resource not found",
       error_code: "not_found",
@@ -21,6 +21,15 @@ class Root < Grape::API
       status: 422
     }
     error!(error_response, 422)
+  end
+
+  rescue_from Grape::Exceptions::ValidationErrors do |e|
+    error_response = {
+      message: e.full_messages.join(", "),
+      error_code: "bad_request",
+      status: 400
+    }
+    error!(error_response, 400)
   end
 
   rescue_from Pundit::NotAuthorizedError do
