@@ -91,7 +91,10 @@ RSpec.describe "Auth API", type: :request do
       post "/api/v1/auth/sign_in", params: { email: "login@example.com", password: "wrong-password" }
 
       expect(response).to have_http_status(:unauthorized)
-      expect(JSON.parse(response.body)["error"]).to eq("Invalid email or password")
+      body = JSON.parse(response.body)
+      expect(body["message"]).to eq("Invalid email or password")
+      expect(body["error_code"]).to eq("unauthorized")
+      expect(body["status"]).to eq(401)
     end
   end
 

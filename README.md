@@ -23,6 +23,18 @@ Protected endpoint example: `GET /api/v1/auth/me`
 
 JWT is validated server-side and revoked tokens are stored in denylist.
 
+## Error response contract
+
+All API errors use a consistent JSON shape:
+
+```json
+{
+  "message": "Human-readable error message",
+  "error_code": "machine_readable_code",
+  "status": 400
+}
+```
+
 ## Roles and permissions (Pundit)
 
 - **Admin**: create/update/delete events and artists.

@@ -13,6 +13,16 @@ RSpec.describe Booking, type: :model do
       expect(booking).not_to be_valid
       expect(booking.errors[:event]).to include("has already started")
     end
+
+    it "enforces uniqueness at the database level" do
+      user = create(:user)
+      event = create(:event)
+      create(:booking, user: user, event: event)
+
+      expect do
+        Booking.insert_all!([ { user_id: user.id, event_id: event.id, created_at: Time.current, updated_at: Time.current } ])
+      end.to raise_error(ActiveRecord::RecordNotUnique)
+    end
   end
 
   describe ".create_for!" do

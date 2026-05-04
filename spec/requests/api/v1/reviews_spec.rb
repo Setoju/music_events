@@ -109,8 +109,10 @@ RSpec.describe "Reviews API", type: :request do
       put "/api/v1/events/#{event.id}/reviews", params: { rating: 6 }, headers: headers
 
       expect(response).to have_http_status(400)
-      # Grape parameter validation returns error key
-      expect(JSON.parse(response.body)).to have_key("error")
+      body = JSON.parse(response.body)
+      expect(body["message"]).to include("rating")
+      expect(body["error_code"]).to eq("bad_request")
+      expect(body["status"]).to eq(400)
     end
   end
 
