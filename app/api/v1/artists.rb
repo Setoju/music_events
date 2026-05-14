@@ -105,7 +105,7 @@ module V1
         get "events" do
           artist = Artist.find(params[:id])
           authorize_record!(artist, :show?)
-          events = artist.events.upcoming
+          events = artist.events.upcoming.with_booked_tickets_count.preload(:artists)
           present events, with: Entities::Event
         end
       end

@@ -5,6 +5,12 @@ class Event < ApplicationRecord
   has_many :users, through: :bookings
   has_many :reviews, dependent: :destroy
 
+  scope :with_booked_tickets_count, -> do
+    left_joins(:bookings)
+      .select("events.*, COUNT(bookings.id) AS booked_tickets_count")
+      .group("events.id")
+  end
+
   validates :name, presence: true, length: { maximum: 255 }
   validates :venue, presence: true, length: { maximum: 255 }
   validates :city, presence: true, length: { maximum: 255 }
@@ -30,6 +36,8 @@ def coordinates_complete
   errors.add(:base, "Both latitude and longitude must be provided together or both be empty")
 end
   def booked_tickets
+    return self[:booked_tickets_count].to_i if has_attribute?("booked_tickets_count")
+
     bookings.count
   end
 

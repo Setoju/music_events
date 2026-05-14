@@ -11,7 +11,7 @@ module V1
       end
       get do
         authorize_record!(Event, :index?)
-        events = Event.upcoming.includes(:artists)
+        events = Event.upcoming.with_booked_tickets_count.preload(:artists)
         events = events.by_city(params[:city]) if params[:city]
         events = events.by_genre(params[:genre]) if params[:genre]
         present events, with: Entities::Event
@@ -25,7 +25,7 @@ module V1
       end
       get "past" do
         authorize_record!(Event, :index?)
-        events = Event.past.includes(:artists)
+        events = Event.past.with_booked_tickets_count.preload(:artists)
         events = events.by_city(params[:city]) if params[:city]
         events = events.by_genre(params[:genre]) if params[:genre]
         present events, with: Entities::Event
@@ -37,7 +37,7 @@ module V1
         requires :id, type: Integer
       end
       get ":id" do
-        event = Event.includes(:artists, :reviews).find(params[:id])
+        event = Event.with_booked_tickets_count.preload(:artists, :reviews).find(params[:id])
         authorize_record!(event, :show?)
         present event, with: Entities::Event
       end
