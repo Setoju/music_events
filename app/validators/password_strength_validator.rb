@@ -1,5 +1,5 @@
 class PasswordStrengthValidator < ActiveModel::Validator
-  MINIMUM_LENGTH = 12
+  MINIMUM_LENGTH = 8.freeze
   REQUIREMENTS = {
     uppercase: /[A-Z]/,
     lowercase: /[a-z]/,
