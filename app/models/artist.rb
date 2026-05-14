@@ -3,7 +3,7 @@ class Artist < ApplicationRecord
   has_many :events, through: :event_artists
 
   validates :name, presence: true
-  validates :bio, presence: true, length: { minimum: 10 }
+  validates :bio, presence: true, length: { minimum: 10, maximum: 2000 }
   validates :genre, presence: true
   validates :country, presence: true
   validates :website, format: URI.regexp(%w[http https])
