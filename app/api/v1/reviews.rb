@@ -57,8 +57,8 @@ module V1
           desc "Delete review for event by a user with booking"
           delete do
             authenticate!
+            authorize_record!(Review, :destroy?)
             review = Review.includes(:user).find_by!(user_id: current_user.id, event_id: params[:event_id])
-            authorize_record!(review, :destroy?)
 
             review.destroy
             status 204
