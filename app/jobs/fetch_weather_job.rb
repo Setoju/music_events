@@ -1,6 +1,9 @@
 class FetchWeatherJob < ApplicationJob
   queue_as :default
-  retry_on StandardError, wait: :exponentially_longer, attempts: 3
+  retry_on StandardError, wait: :polynomially_longer, attempts: 3 do |job, error|
+    job.send(:persist_unexpected_error, job.arguments.first, error)
+    raise error
+  end
 
   def perform(event_id, booking_id = nil)
     event = Event.find(event_id)
@@ -38,29 +41,29 @@ class FetchWeatherJob < ApplicationJob
     end
   rescue ActiveRecord::RecordNotFound
     Rails.logger.info("Event #{event_id} deleted before weather fetch")
-  rescue StandardError => e
-    # Ensure unexpected errors are logged and persisted to the event context so
-    # we don't silently lose provider failures when jobs error out.
-    Rails.logger.error("FetchWeatherJob unexpected error for event #{event_id}: #{e.class} #{e.message}\n#{e.backtrace&.first(5).join("\n")}")
-
-    begin
-      event = Event.find_by(id: event_id)
-      if event
-        event.ensure_context
-        event.event_context.update(
-          weather_status: 'failed',
-          weather_error: e.message,
-          weather_error_code: WeatherErrorMapper.map(e.message),
-          weather_fetched_at: Time.current,
-          expires_at: 24.hours.from_now
-        )
-      end
-    rescue => inner_e
-      Rails.logger.error("FetchWeatherJob: failed to persist error for event #{event_id}: #{inner_e.class} #{inner_e.message}")
-    end
   end
 
   private
+
+  def persist_unexpected_error(event_id, error)
+    # Persist the final failed attempt so the event context still reflects the
+    # last known job outcome after retries are exhausted.
+    Rails.logger.error("FetchWeatherJob unexpected error for event #{event_id}: #{error.class} #{error.message}\n#{error.backtrace&.first(5).join("\n")}")
+
+    event = Event.find_by(id: event_id)
+    return unless event
+
+    event.ensure_context
+    event.event_context.update(
+      weather_status: 'failed',
+      weather_error: error.message,
+      weather_error_code: WeatherErrorMapper.map(error.message),
+      weather_fetched_at: Time.current,
+      expires_at: 24.hours.from_now
+    )
+  rescue => inner_error
+    Rails.logger.error("FetchWeatherJob: failed to persist error for event #{event_id}: #{inner_error.class} #{inner_error.message}")
+  end
 
   def log_provider_error(event, error_message)
     Rails.logger.warn("Weather provider error for event #{event.id}: #{error_message}")

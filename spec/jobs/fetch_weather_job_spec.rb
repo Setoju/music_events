@@ -60,6 +60,7 @@ RSpec.describe FetchWeatherJob, type: :job do
   it 'retries unexpected errors' do
     allow(WeatherProvider).to receive(:fetch).and_raise(StandardError, 'temporary failure')
 
-    expect { described_class.perform_now(event.id) }.to raise_error(StandardError)
+    expect { described_class.perform_now(event.id) }
+      .to have_enqueued_job(described_class).with(event.id).once
   end
 end
