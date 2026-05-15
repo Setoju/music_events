@@ -55,11 +55,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_120000) do
     t.datetime "updated_at", null: false
     t.jsonb "weather_data", default: {}, null: false
     t.text "weather_error"
-    t.string "weather_error_code"
     t.datetime "weather_fetched_at"
     t.string "weather_status", default: "pending", null: false
     t.index ["event_id"], name: "index_event_contexts_on_event_id", unique: true
-    t.index ["weather_error_code"], name: "index_event_contexts_on_weather_error_code"
     t.index ["weather_status"], name: "index_event_contexts_on_weather_status"
   end
 
