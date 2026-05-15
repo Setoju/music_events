@@ -50,7 +50,6 @@ RSpec.describe "Manual Weather Fetch API", type: :request do
       event = create(:event, starts_at: 3.days.from_now)
       booking = create(:booking, user: user, event: event)
       booking.update!(last_weather_fetch_at: 2.hours.ago)
-
       post "/api/v1/events/#{event.id}/fetch_weather", headers: user_headers
 
       expect(response).to have_http_status(429)
@@ -58,7 +57,7 @@ RSpec.describe "Manual Weather Fetch API", type: :request do
       expect(body["error_code"]).to eq("fetch_rate_limited")
     end
 
-    it "queues a fetch and updates booking timestamp for valid requests" do
+    it "queues a fetch and records an attempt for valid requests" do
       event = create(:event, starts_at: 3.days.from_now)
       booking = create(:booking, user: user, event: event)
 
@@ -67,7 +66,34 @@ RSpec.describe "Manual Weather Fetch API", type: :request do
       end.to change { ActiveJob::Base.queue_adapter.enqueued_jobs.size }.by(1)
 
       expect(response).to have_http_status(:accepted)
-      expect(booking.reload.last_weather_fetch_at).to be_within(5.seconds).of(Time.current)
+      booking.reload
+      expect(booking.weather_fetch_attempts_count).to eq(1)
+      expect(booking.last_weather_fetch_attempt_at).to be_within(5.seconds).of(Time.current)
+    end
+
+    it "allows multiple attempts after failures up to the limit" do
+      event = create(:event, starts_at: 3.days.from_now)
+      booking = create(:booking, user: user, event: event, weather_fetch_attempts_count: 2, last_weather_fetch_attempt_at: 1.hour.ago)
+
+      expect do
+        post "/api/v1/events/#{event.id}/fetch_weather", headers: user_headers
+      end.to change { ActiveJob::Base.queue_adapter.enqueued_jobs.size }.by(1)
+
+      expect(response).to have_http_status(:accepted)
+      booking.reload
+      expect(booking.weather_fetch_attempts_count).to eq(3)
+      expect(booking.last_weather_fetch_attempt_at).to be_within(5.seconds).of(Time.current)
+    end
+
+    it "blocks attempts after exceeding the limit within 24 hours" do
+      event = create(:event, starts_at: 3.days.from_now)
+      booking = create(:booking, user: user, event: event, weather_fetch_attempts_count: 3, last_weather_fetch_attempt_at: 2.hours.ago)
+
+      post "/api/v1/events/#{event.id}/fetch_weather", headers: user_headers
+
+      expect(response).to have_http_status(429)
+      body = JSON.parse(response.body)
+      expect(body["error_code"]).to eq("fetch_rate_limited")
     end
 
     it "allows manual fetch exactly at 7 days before event" do

@@ -72,7 +72,7 @@ module V1
           error!(error_response, 422)
         end
 
-        # rate limit: once per day per booking
+        # rate limit: if a successful fetch happened in the last 24 hours, block
         if booking.last_weather_fetch_at.present? && booking.last_weather_fetch_at > 24.hours.ago
           error_response = {
             message: "Manual weather fetch already performed within the last 24 hours",
@@ -82,9 +82,28 @@ module V1
           error!(error_response, 429)
         end
 
-        # record fetch timestamp and enqueue job
-        booking.update!(last_weather_fetch_at: Time.current)
-        FetchWeatherJob.perform_later(event.id)
+        # Allow multiple attempts after failures: allow up to 3 attempts within 24 hours
+        max_attempts = 3
+        if booking.last_weather_fetch_attempt_at.present? && booking.last_weather_fetch_attempt_at > 24.hours.ago
+          if booking.weather_fetch_attempts_count >= max_attempts
+            error_response = {
+              message: "Too many manual fetch attempts within 24 hours",
+              error_code: "fetch_rate_limited",
+              status: 429
+            }
+            error!(error_response, 429)
+          end
+        end
+
+        # record attempt timestamp and increment counter (reset if older than 24h)
+        if booking.last_weather_fetch_attempt_at.nil? || booking.last_weather_fetch_attempt_at <= 24.hours.ago
+          booking.update!(weather_fetch_attempts_count: 1, last_weather_fetch_attempt_at: Time.current)
+        else
+          booking.update!(weather_fetch_attempts_count: booking.weather_fetch_attempts_count + 1, last_weather_fetch_attempt_at: Time.current)
+        end
+
+        # enqueue job and pass booking id so the job can clear attempts on success
+        FetchWeatherJob.perform_later(event.id, booking.id)
 
         status 202
         { message: "Weather fetch queued" }
