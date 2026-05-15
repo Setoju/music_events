@@ -15,7 +15,7 @@ class EventContext < ApplicationRecord
   end
 
   def weather_error_code
-    return nil unless weather_status == 'failed'
+    return nil unless weather_status == "failed"
 
     return self[:weather_error_code] if self[:weather_error_code].present?
 

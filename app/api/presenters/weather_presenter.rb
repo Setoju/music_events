@@ -17,9 +17,9 @@ module Presenters
     private
 
     def status
-      return 'current' if @context.weather_status == 'success' && @context.weather_data.present? && @context.weather_fresh?
-      return 'failed' if @context.weather_status == 'failed'
-      'missing'
+      return "current" if @context.weather_status == "success" && @context.weather_data.present? && @context.weather_fresh?
+      return "failed" if @context.weather_status == "failed"
+      "missing"
     end
   end
 end

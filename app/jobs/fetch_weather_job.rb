@@ -15,7 +15,7 @@ class FetchWeatherJob < ApplicationJob
     if result[:success]
       event.event_context.update!(
         weather_data: result[:data],
-        weather_status: 'success',
+        weather_status: "success",
         weather_fetched_at: Time.current,
         expires_at: 24.hours.from_now
       )
@@ -32,7 +32,7 @@ class FetchWeatherJob < ApplicationJob
     else
       log_provider_error(event, result[:error])
       event.event_context.update!(
-        weather_status: 'failed',
+        weather_status: "failed",
         weather_error: result[:error],
         weather_error_code: WeatherErrorMapper.map(result[:error]),
         weather_fetched_at: Time.current,
@@ -55,7 +55,7 @@ class FetchWeatherJob < ApplicationJob
 
     event.ensure_context
     event.event_context.update(
-      weather_status: 'failed',
+      weather_status: "failed",
       weather_error: error.message,
       weather_error_code: WeatherErrorMapper.map(error.message),
       weather_fetched_at: Time.current,

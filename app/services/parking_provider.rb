@@ -64,8 +64,8 @@ class ParkingProvider
       Faraday.new(url: API_URL) do |faraday|
         if include_retry
           faraday.request :retry, max: 2, interval: 0.5, backoff_factor: 2,
-                                   exceptions: [Faraday::TimeoutError, Faraday::ConnectionFailed],
-                                   retry_statuses: [429, 500, 502, 503, 504]
+                                   exceptions: [ Faraday::TimeoutError, Faraday::ConnectionFailed ],
+                                   retry_statuses: [ 429, 500, 502, 503, 504 ]
         end
         faraday.response :follow_redirects
         faraday.response :logger if Rails.env.development?
@@ -170,7 +170,7 @@ class ParkingProvider
     end
 
     def retryable_status?(status)
-      [429, 500, 502, 503, 504].include?(status)
+      [ 429, 500, 502, 503, 504 ].include?(status)
     end
 
     def timeout_exception?(exception)

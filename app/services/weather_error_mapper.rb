@@ -1,12 +1,12 @@
 class WeatherErrorMapper
-  MAPPING_PATH = Rails.root.join('config', 'weather_error_mapping.yml')
+  MAPPING_PATH = Rails.root.join("config", "weather_error_mapping.yml")
 
   def self.mapping
     @mapping ||= if File.exist?(MAPPING_PATH)
                    YAML.load_file(MAPPING_PATH) || {}
-                 else
+    else
                    {}
-                 end
+    end
   end
 
   def self.map(raw_error)
@@ -20,6 +20,6 @@ class WeatherErrorMapper
       end
     end
 
-    'unknown_error'
+    "unknown_error"
   end
 end
