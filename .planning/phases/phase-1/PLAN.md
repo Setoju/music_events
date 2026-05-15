@@ -13,7 +13,7 @@
 ### What This Phase Delivers
 
 - **EventContext Model:** New data model to store external provider data (weather, parking) separately from Event
-- **WeatherProvider Service:** Encapsulated HTTP client for OpenWeatherMap API with retry logic and error handling
+- **WeatherProvider Service:** Encapsulated HTTP client for Open-Meteo API with retry logic and error handling
 - **Background Jobs:** FetchWeatherJob (fetches individual weather), ScheduleWeatherFetchesJob (discovers events 24h away)
 - **Solid Queue Integration:** Database-backed job queue configured for recurring tasks
 - **Test Infrastructure:** Factories, stubs, and comprehensive specs covering all provider integration patterns
@@ -95,7 +95,7 @@ Create a new migration that adds the `event_contexts` table with the following f
 
 **Columns:**
 - `event_id` (references) — foreign key to events table, null: false, unique index (one context per event)
-- `weather_data` (jsonb, default: {}) — full OpenWeatherMap API response (cached)
+- `weather_data` (jsonb, default: {}) — normalized Open-Meteo API response (cached)
 - `weather_status` (string, default: "pending") — one of: pending, success, failed
 - `weather_error` (text) — error message from provider (for debugging, not user-facing)
 - `weather_fetched_at` (datetime) — timestamp of last weather fetch attempt
@@ -145,7 +145,7 @@ Expected tests to write:
 **Factory (event_context_factory.rb):**
 Create a FactoryBot factory for EventContext that:
 - Associates with an Event (via trait or default)
-- Provides sample weather data (frozen forecast from OpenWeatherMap schema)
+- Provides sample weather data (frozen forecast from Open-Meteo schema)
 - Supports trait `:with_weather` (success status, full data)
 - Supports trait `:weather_failed` (failed status, error message)
 - Supports trait `:weather_pending` (pending status, no data)
@@ -153,12 +153,12 @@ Create a FactoryBot factory for EventContext that:
 Example usage in specs: `create(:event_context, :with_weather)` or `create(:event_context, :weather_failed)`
 
 **Test Support (weather_api_stubs.rb):**
-Create a helper module that stubs Faraday HTTP calls to OpenWeatherMap:
-- `stub_weather_success(lat, lng)` → returns mocked OpenWeatherMap response body (5-day forecast)
+Create a helper module that stubs Faraday HTTP calls to Open-Meteo:
+- `stub_weather_success(lat, lng)` → returns mocked Open-Meteo response body
 - `stub_weather_failure(lat, lng, error_code)` → returns mocked HTTP error (404, 500, timeout)
 - `assert_weather_called_with(lat, lng)` → verifies HTTP call was made with correct params
 
-Store sample API response as fixture in `spec/fixtures/weather_api_response.json` (real OpenWeatherMap response, sanitized).
+Store sample API response as fixture in `spec/fixtures/weather_api_response.json` (real Open-Meteo response, sanitized).
 
 This module should use `WebMock.stub_request` or `VCR.use_cassette` depending on preference (WebMock is simpler for unit tests; VCR is better for integration).
 
@@ -250,9 +250,9 @@ Create `WeatherProvider` service object that:
 - Log requests/responses in development mode (via `conn.use :logger`)
 
 **API Integration:**
-- OpenWeatherMap endpoint: `https://api.openweathermap.org/data/2.5/forecast`
-- Query parameters: `lat`, `lon`, `appid` (from ENV["OPENWEATHERMAP_API_KEY"]), `units=metric`
-- Response structure: extract `["list"]` array (forecast entries), return first 9 (3-day forecast)
+- Open-Meteo endpoint: `https://api.open-meteo.com/v1/forecast`
+- Query parameters: `latitude`, `longitude`, `hourly=temperature_2m,precipitation_probability,weather_code,wind_speed_10m`, `timezone=auto`, `forecast_days=7`
+- Response structure: map `hourly` arrays into normalized `list` entries and return first 9
 
 **Error Handling:**
 - Rescue `Faraday::TimeoutError` → return error_result("Timeout: {message}")
@@ -272,7 +272,7 @@ Create `WeatherProvider` service object that:
 **Private Methods:**
 - `http_client` — builds Faraday connection (memoized)
 - `parse_response(response)` — extracts forecast data from API response
-- `api_key` — reads from ENV["OPENWEATHERMAP_API_KEY"]
+- `value_at` — helper to safely read values from `hourly` arrays by index
 - `success_result(data)` — constructs success hash
 - `error_result(message)` — constructs error hash
 
@@ -296,7 +296,7 @@ bundle exec rspec spec/services/weather_provider_spec.rb
 **Happy Path:**
 - `WeatherProvider.fetch(event)` with valid event returns `{success: true, data: {list: [...]}}` (use stubbed HTTP)
 - Data includes first 9 forecast entries
-- API key from ENV is passed to OpenWeatherMap
+- Open-Meteo query params are passed with latitude/longitude and hourly fields
 
 **Error Cases:**
 - Missing coordinates (nil latitude/longitude) → error_result("Missing coordinates") (no HTTP call made)
@@ -911,7 +911,7 @@ Run this checklist before marking Phase 1 complete:
 
 | Risk | Likelihood | Impact | Mitigation |
 |------|-----------|--------|-----------|
-| **Weather API rate limit exceeded** | Medium | 24h weather fetches start failing | Monitor OpenWeatherMap usage; pre-arrange higher tier if needed. Current free tier: 1000 calls/day (sufficient for ~500 events). |
+| **Weather API rate limit exceeded** | Medium | 24h weather fetches start failing | Monitor Open-Meteo usage and fair-use limits; switch to commercial plan if traffic grows. |
 | **Job hangs on timeout (no explicit timeout set)** | High | Job never completes; clogs queue | **CRITICAL:** Always set Faraday timeout to 5s; use `faraday-retry` to prevent infinite loops. |
 | **EventContext records bloat over time** | Low (Phase 1) | Disk space, query slowdown | Phase 2 can add cleanup job (e.g., delete contexts older than 7 days). Not urgent. |
 | **Race condition: two jobs fetch weather for same event** | Low | Duplicate EventContext or update clash | Use `create_or_update_context` or ensure unique index on `event_id`. Solid Queue handles deduplication at job level. |
@@ -919,7 +919,7 @@ Run this checklist before marking Phase 1 complete:
 | **Solid Queue supervisor crashes; jobs stuck** | Very Low | Queued jobs never execute until restart | Supervisor managed by `bin/dev` (or Docker/systemd in production). Solid Queue is well-tested; crashes rare. Monitor supervisor health. |
 | **JSON parsing fails on malformed API response** | Low | Job crashes; needs retry | Rescue `JSON::ParserError` in WeatherProvider; return error_result; job doesn't raise. |
 | **EventContext expires_at is null; API leaks stale weather** | Low | Users see week-old forecast | Set `expires_at` to 24.hours.from_now when fetching; check `weather_fresh?` before exposing (Phase 2). |
-| **API key leaked in logs** | Medium | Unauthorized usage; rate limit abuse | **NEVER log response body in Faraday.** Store API key in ENV only. Rails.logger will not include ENV vars. |
+| **Provider request details leaked in logs** | Medium | Sensitive request metadata exposure | **NEVER log full response body in Faraday.** Keep logs minimal and structured. |
 | **Pre-commit hook not installed** | Low | Tests not enforced; broken code merged | Verify `.githooks/pre-commit` is executable; setup instructions in README. Remind developer on first commit. |
 
 ---

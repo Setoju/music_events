@@ -38,7 +38,7 @@ Phase 1 establishes the foundation for external provider integrations by introdu
 | Library | Version | Purpose | When to Use |
 |---------|---------|---------|-------------|
 | Faraday | 2.8+ [ASSUMED] | HTTP client for external API calls | Lightweight, middleware-friendly; integrates well with Rails error handling |
-| OpenWeatherMap API | Free tier [ASSUMED] | Weather forecast data | 5-day forecast available; good geographic coverage; 1000 calls/day free tier sufficient for event volume |
+| Open-Meteo Forecast API | Free/public + commercial tiers [ASSUMED] | Weather forecast data | 7-day default forecast; no API key required for public endpoint; strong model coverage |
 
 ### Alternatives Considered
 | Instead of | Could Use | Tradeoff |
@@ -93,7 +93,7 @@ bundle add faraday faraday-retry faraday-follow-redirects
      ┌───────▼──┐  ┌──────▼──────┐  ┌──▼──────────────┐
      │ Database │  │ External    │  │ Error Log       │
      │          │  │ API         │  │ (for debugging) │
-     │EventContext│ │(OpenWeather)│ │                │
+    │EventContext│ │(Open-Meteo) │ │                │
      └──────────┘  └─────────────┘  └─────────────────┘
 ```
 
@@ -140,7 +140,7 @@ app/
 ```ruby
 # app/services/weather_provider.rb
 class WeatherProvider
-  BASE_URL = "https://api.openweathermap.org/data/2.5/forecast"
+  BASE_URL = "https://api.open-meteo.com/v1/forecast"
   TIMEOUT = 5.seconds
   
   def self.fetch(event)
@@ -153,10 +153,11 @@ class WeatherProvider
     response = http_client.get(
       BASE_URL,
       params: {
-        lat: event.latitude,
-        lon: event.longitude,
-        appid: api_key,
-        units: "metric"
+        latitude: event.latitude,
+        longitude: event.longitude,
+        hourly: "temperature_2m,precipitation_probability,weather_code,wind_speed_10m",
+        timezone: "auto",
+        forecast_days: 7
       },
       timeout: TIMEOUT
     )
@@ -180,7 +181,19 @@ class WeatherProvider
   end
   
   def parse_response(response)
-    JSON.parse(response.body)["list"].first(9) # 3-day forecast
+    payload = JSON.parse(response.body)
+    hourly = payload["hourly"] || {}
+    times = Array(hourly["time"]).first(9)
+
+    times.each_with_index.map do |time, idx|
+      {
+        "time" => time,
+        "temperature_2m" => Array(hourly["temperature_2m"])[idx],
+        "precipitation_probability" => Array(hourly["precipitation_probability"])[idx],
+        "weather_code" => Array(hourly["weather_code"])[idx],
+        "wind_speed_10m" => Array(hourly["wind_speed_10m"])[idx]
+      }
+    end
   end
   
   def http_client
@@ -191,9 +204,6 @@ class WeatherProvider
     end
   end
   
-  def api_key
-    ENV["OPENWEATHERMAP_API_KEY"]
-  end
 end
 
 # Usage in job:
@@ -675,20 +685,20 @@ end
 - ✅ Standard Rails ecosystem choice
 - ✅ Easy to test with stubs
 
-### Why OpenWeatherMap (not WeatherAPI / Weatherstack / etc)?
+### Why Open-Meteo (not WeatherAPI / Weatherstack / etc)?
 
 **Options evaluated:**
 
 | API | Free Calls/Day | Forecast Days | Response Size | Why Chosen/Rejected |
 |-----|---|---|---|---|
-| **OpenWeatherMap** | 1,000 | 5 | ~30KB | Standard; widely used; good geographic coverage; 5-day forecast sufficient for events |
+| **Open-Meteo** | Public endpoint (fair-use) | 7 default (up to 16) | Lean hourly arrays | No API key required for public endpoint; strong model blending; simple forecast API |
 | Weather API | 1,000,000 | 10 | ~50KB | Overkill; excessive forecast depth for event use case |
 | Weatherstack | 250 (free tier) | 7 | Large | Low free tier; outdated API |
 | WeatherAPI.com | 1,000,000 | 14 | ~60KB | Good alternative; marginally more complex response |
 
-**Recommendation:** OpenWeatherMap. Standard industry choice; 1000 calls/day is ample for reasonable event volume (e.g., 500 events/day × 2 calls each); 5-day forecast covers most event prep windows.
+**Recommendation:** Open-Meteo. Forecast endpoint matches requirements, avoids mandatory API-key management on public endpoint, and supports future model tuning.
 
-[ASSUMED] — Pricing and API specs verified against training knowledge; recommend confirming current OpenWeatherMap free tier before locking implementation.
+[ASSUMED] — Pricing/fair-use and commercial limits should be confirmed for projected production traffic before launch.
 
 ---
 
@@ -708,7 +718,7 @@ end
 - EventContext model design [ASSUMED: Rails conventions for data separation; verified in similar Rails projects]
 
 ### Tertiary (LOW confidence → validation needed)
-- OpenWeatherMap API free tier (1000 calls/day) [ASSUMED: based on training data; recommend confirming before Phase 2 implementation]
+- Open-Meteo fair-use and commercial limits for expected production traffic [ASSUMED: confirm before launch]
 - Faraday-retry exponential backoff defaults [ASSUMED: library docs; recommend testing in dev]
 
 ---
@@ -720,13 +730,13 @@ end
 - **Architecture:** HIGH — Service pattern established; EventContext model follows Rails conventions
 - **Failure Handling:** HIGH — Active Job retry/discard is standard Rails; tested in many projects
 - **Scheduling:** HIGH — Fugit is battle-tested; recurring tasks in Solid Queue well-documented
-- **External APIs:** MEDIUM → LOW — OpenWeatherMap choice assumes free tier availability; recommend confirming in spike
+- **External APIs:** MEDIUM — Open-Meteo public endpoint is suitable now; confirm long-term commercial usage limits for scale
 - **HTTP Client:** HIGH — Faraday is Rails standard; wide adoption in ecosystem
 
 **Research date:** May 14, 2026  
 **Valid until:** June 14, 2026 (1 month; Solid Queue 1.4.0 is stable)  
 **Assumptions requiring validation:**
-- OpenWeatherMap free tier specs (confirm call limits, response formats)
+- Open-Meteo fair-use/commercial limits (confirm call limits and SLA for production)
 - Faraday middleware behavior under production load (recommend load test in Phase 2)
 - Event volume estimates (affects scheduling window width; 24h±30m is safe for up to 1000 events/day)
 
@@ -737,7 +747,7 @@ end
 **Ready for planner:** All research sections complete. Standard stack locked. Architecture patterns documented. Risks identified. Test framework planned.
 
 **Planner should:**
-1. Confirm OpenWeatherMap API tier and credentials path (ENV var name)
+1. Confirm Open-Meteo usage limits and optional commercial plan requirements
 2. Review EventContext model design; confirm separation of concerns aligns with API contract expectations
 3. Verify pre-commit RSpec validation covers new jobs/services (Wave 0 test gaps)
 4. Plan error tracking integration (Sentry, Rollbar, or Rails.error.report)
