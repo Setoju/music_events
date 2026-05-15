@@ -22,7 +22,9 @@ RSpec.describe Event, type: :model do
     let!(:sooner_event) { create(:event, starts_at: 1.day.from_now) }
 
     it "returns only future events ordered by starts_at ascending" do
-      expect(described_class.upcoming).to eq([ sooner_event, later_event ])
+      upcoming_events = described_class.upcoming.where(id: [ sooner_event.id, later_event.id ])
+
+      expect(upcoming_events).to eq([ sooner_event, later_event ])
       expect(described_class.upcoming).not_to include(past_event)
     end
   end

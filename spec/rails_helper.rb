@@ -10,6 +10,7 @@ abort("The Rails environment is running in production mode!") if Rails.env.produ
 require 'rspec/rails'
 # Add additional requires below this line. Rails is not loaded until this point!
 require 'shoulda/matchers'
+require 'webmock/rspec'
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
@@ -25,6 +26,11 @@ require 'shoulda/matchers'
 # require only the support files necessary.
 #
 # Rails.root.glob('spec/support/**/*.rb').sort_by(&:to_s).each { |f| require f }
+Rails.root.glob('spec/support/**/*.rb').sort_by(&:to_s).each do |file|
+  next if file.to_s.end_with?('_spec.rb')
+
+  require file
+end
 
 # Ensures that the test database schema matches the current schema file.
 # If there are pending migrations it will invoke `db:test:prepare` to
@@ -65,6 +71,8 @@ RSpec.configure do |config|
   #
   config.include FactoryBot::Syntax::Methods
   config.infer_spec_type_from_file_location!
+
+  WebMock.disable_net_connect!(allow_localhost: true)
 
   # Filter lines from Rails gems in backtraces.
   config.filter_rails_from_backtrace!

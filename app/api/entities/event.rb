@@ -15,5 +15,11 @@ module Entities
     expose :artists,
            using: Entities::Artist,
            documentation: { type: "Entities::Artist", is_array: true, desc: "Performing artists" }
+    expose :weather,
+           using: Entities::EventContext,
+           if: ->(event, _) { event.event_context.present? },
+           documentation: { type: "Entities::EventContext", desc: "Weather forecast data" } do |event|
+      event.event_context
+    end
   end
 end

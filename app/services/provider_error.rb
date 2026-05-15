@@ -1,0 +1,1 @@
+class ProviderError < StandardError; end

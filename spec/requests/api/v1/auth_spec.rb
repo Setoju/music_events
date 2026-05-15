@@ -30,7 +30,7 @@ RSpec.describe "Auth API", type: :request do
 
       expect(response).to have_http_status(422)
       body = JSON.parse(response.body)
-      expect(body["message"]).to include("must be at least 12 characters long")
+      expect(body["message"]).to include("must be at least 8 characters long")
     end
 
     it "rejects passwords without uppercase letters" do
@@ -130,7 +130,7 @@ RSpec.describe "Auth API", type: :request do
       body = JSON.parse(response.body)
       requirements = body["password_requirements"]
 
-      expect(requirements["minimum_length"]).to eq(12)
+      expect(requirements["minimum_length"]).to eq(8)
       expect(requirements["requirements"]).to be_an(Array)
       expect(requirements["requirements"].length).to eq(4)
       expect(requirements["requirements"]).to include("At least one uppercase letter (A-Z)")

@@ -1,4 +1,5 @@
 class Event < ApplicationRecord
+  has_one :event_context, dependent: :destroy
   has_many :event_artists, dependent: :destroy
   has_many :artists, through: :event_artists
   has_many :bookings, dependent: :destroy
@@ -28,13 +29,18 @@ class Event < ApplicationRecord
   scope :by_city, ->(city) { where(city: city) }
   scope :by_genre, ->(genre) { where(genre: genre) }
 
-def coordinates_complete
-  lat_present = latitude.present?
-  lon_present = longitude.present?
-  return if lat_present == lon_present # Both present or both nil
+  def ensure_context
+    event_context || build_event_context
+  end
 
-  errors.add(:base, "Both latitude and longitude must be provided together or both be empty")
-end
+  def coordinates_complete
+    lat_present = latitude.present?
+    lon_present = longitude.present?
+    return if lat_present == lon_present # Both present or both nil
+
+    errors.add(:base, "Both latitude and longitude must be provided together or both be empty")
+  end
+
   def booked_tickets
     return self[:booked_tickets_count].to_i if has_attribute?("booked_tickets_count")
 
