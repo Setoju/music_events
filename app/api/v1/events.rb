@@ -109,6 +109,39 @@ module V1
         { message: "Weather fetch queued" }
       end
 
+      desc "Get parking suggestions near an event for booked users.",
+           success: { code: 200, entity: Entities::ParkingSuggestions, is_array: false }
+      params do
+        requires :id, type: Integer
+      end
+      get ":id/parking_suggestions" do
+        authenticate!
+
+        event = Event.find(params[:id])
+
+        booking = current_user.bookings.find_by(event_id: event.id)
+        unless booking
+          error_response = {
+            message: "You must have a booking for this event to view parking suggestions",
+            error_code: "not_booked",
+            status: 403
+          }
+          error!(error_response, 403)
+        end
+
+        result = ParkingProvider.fetch(event)
+        unless result[:success]
+          error_response = {
+            message: result[:error],
+            error_code: "parking_lookup_failed",
+            status: 502
+          }
+          error!(error_response, 502)
+        end
+
+        present result[:data], with: Entities::ParkingSuggestions
+      end
+
       desc "Create an event",
          success: { code: 201, entity: Entities::Event, is_array: false }
       params do
