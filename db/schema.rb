@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_04_110000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_15_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -28,9 +28,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_110000) do
   create_table "bookings", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "event_id", null: false
+    t.datetime "last_weather_fetch_at"
+    t.datetime "last_weather_fetch_attempt_at"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.integer "weather_fetch_attempts_count", default: 0, null: false
     t.index ["event_id"], name: "index_bookings_on_event_id"
+    t.index ["last_weather_fetch_at"], name: "index_bookings_on_last_weather_fetch_at"
+    t.index ["last_weather_fetch_attempt_at"], name: "index_bookings_on_last_weather_fetch_attempt_at"
     t.index ["user_id", "event_id"], name: "index_bookings_on_user_id_and_event_id_unique", unique: true
     t.index ["user_id"], name: "index_bookings_on_user_id"
   end
@@ -43,6 +48,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_110000) do
     t.index ["artist_id"], name: "index_event_artists_on_artist_id"
     t.index ["event_id", "artist_id"], name: "index_event_artists_on_event_id_and_artist_id", unique: true
     t.index ["event_id"], name: "index_event_artists_on_event_id"
+  end
+
+  create_table "event_contexts", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "event_id", null: false
+    t.datetime "expires_at"
+    t.datetime "parking_fetched_at"
+    t.jsonb "parking_info", default: {}, null: false
+    t.string "parking_status", default: "not_fetched", null: false
+    t.datetime "updated_at", null: false
+    t.jsonb "weather_data", default: {}, null: false
+    t.text "weather_error"
+    t.string "weather_error_code"
+    t.datetime "weather_fetched_at"
+    t.string "weather_status", default: "pending", null: false
+    t.index ["event_id"], name: "index_event_contexts_on_event_id", unique: true
+    t.index ["weather_error_code"], name: "index_event_contexts_on_weather_error_code"
+    t.index ["weather_status"], name: "index_event_contexts_on_weather_status"
   end
 
   create_table "events", force: :cascade do |t|
@@ -100,6 +123,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_110000) do
   add_foreign_key "bookings", "users"
   add_foreign_key "event_artists", "artists"
   add_foreign_key "event_artists", "events"
+  add_foreign_key "event_contexts", "events"
   add_foreign_key "reviews", "events"
   add_foreign_key "reviews", "users"
 end

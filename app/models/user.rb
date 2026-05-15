@@ -7,7 +7,7 @@ class User < ApplicationRecord
   has_many :reviews, dependent: :destroy
 
   validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
-  validates :password, presence: true, length: { minimum: 9 }, if: -> { new_record? || password.present? }
+  validates :password, presence: true, length: { minimum: 8 }, if: -> { new_record? || password.present? }
   validates_with PasswordStrengthValidator, if: -> { new_record? || password.present? }
 
   before_validation :normalize_email

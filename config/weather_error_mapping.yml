@@ -1,0 +1,12 @@
+provider_timeout:
+  - timeout
+  - request timed out
+rate_limited:
+  - rate limit
+  - too many requests
+no_data:
+  - no data
+  - empty response
+network_error:
+  - connection refused
+  - network error

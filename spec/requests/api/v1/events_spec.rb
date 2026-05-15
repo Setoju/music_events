@@ -40,6 +40,43 @@ RSpec.describe "Events API", type: :request do
       expect(body["id"]).to eq(event.id)
       expect(body["name"]).to eq(event.name)
     end
+
+    it "includes weather data when the event context has fresh weather" do
+      context = create(:event_context, :with_weather, event: event)
+
+      get "/api/v1/events/#{event.id}"
+
+      expect(response).to have_http_status(:ok)
+      body = JSON.parse(response.body)
+
+      expect(body["weather"]).to be_present
+      expect(body["weather"]["weather_status"]).to eq('current')
+      expect(body["weather"]["weather_fetched_at"]).to eq(context.weather_fetched_at.utc.iso8601)
+      expect(body["weather"]["weather_error_code"]).to be_nil
+    end
+
+    it "returns weather with status 'failed' and canonical error code when context failed" do
+      create(:event_context, :weather_failed, event: event)
+
+      get "/api/v1/events/#{event.id}"
+
+      expect(response).to have_http_status(:ok)
+      body = JSON.parse(response.body)
+
+      expect(body["weather"]).to be_present
+      expect(body["weather"]["weather_status"]).to eq('failed')
+      expect(body["weather"]["weather_error_code"]).to be_a(String)
+    end
+
+    it "omits weather when the event has no context" do
+      get "/api/v1/events/#{event.id}"
+
+      expect(response).to have_http_status(:ok)
+      body = JSON.parse(response.body)
+
+      expect(body).not_to have_key("weather")
+      expect(body["name"]).to eq(event.name)
+    end
   end
 
   describe "POST /api/v1/events" do

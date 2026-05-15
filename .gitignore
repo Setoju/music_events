@@ -7,6 +7,10 @@
 # Ignore bundler config.
 /.bundle
 
+/_bmad/*
+/_bmad-output/*
+/.agents/*
+
 # Ignore all environment files.
 /.env*
 

@@ -1,10 +1,17 @@
 class JwtToken
   ALGORITHM = "HS256"
   DEFAULT_EXPIRATION = 24.hours
+  WHITELISTED_CLAIMS = %w[user_id email role].freeze
 
   class << self
     def encode(payload = {}, exp: DEFAULT_EXPIRATION.from_now, jti: SecureRandom.uuid, **claims)
-      token_payload = payload.to_h.merge(claims).merge(exp: exp.to_i, iat: Time.current.to_i, jti: jti)
+      # Validate that all claims are whitelisted
+      all_claims = payload.to_h.merge(claims)
+      claim_keys = all_claims.keys.map(&:to_s)
+      invalid_claims = claim_keys - WHITELISTED_CLAIMS
+      raise ArgumentError, "Invalid token claims: #{invalid_claims.join(', ')}" if invalid_claims.any?
+
+      token_payload = all_claims.merge(exp: exp.to_i, iat: Time.current.to_i, jti: jti)
       JWT.encode(token_payload, secret_key, ALGORITHM)
     end
 

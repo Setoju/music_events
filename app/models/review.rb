@@ -6,6 +6,7 @@ class Review < ApplicationRecord
 
   validates :rating, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: RATING_RANGE.begin, less_than_or_equal_to: RATING_RANGE.end }
   validates :user_id, uniqueness: { scope: :event_id, message: "has already reviewed this event" }
+  validates :comment, length: { maximum: 2000 }, allow_nil: true
   validate :user_must_have_booking
   validate :event_must_have_started
 

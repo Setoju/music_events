@@ -27,6 +27,9 @@ gem "grape-swagger"
 gem "jwt"
 gem "pundit"
 gem "rack-cors"
+gem "faraday", ">= 2.8"
+gem "faraday-retry"
+gem "faraday-follow_redirects"
 
 # Security & Validation
 gem "rack-attack"
@@ -39,6 +42,8 @@ group :development, :test do
   gem "faker"
   gem "shoulda-matchers"
   gem "database_cleaner-active_record"
+  gem "vcr"
+  gem "webmock"
 end
 
 # Reduces boot times through caching; required in config/boot.rb

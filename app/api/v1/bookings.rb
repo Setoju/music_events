@@ -10,31 +10,26 @@ module V1
           post do
             authenticate!
 
-            event = Event.includes(:bookings).find(params[:event_id])
-
-            if current_user.bookings.exists?(event_id: event.id)
+            begin
+              event = Event.find(params[:event_id])
+              booking = Booking.create_for!(
+                user: current_user,
+                event: event
+              )
+            rescue Booking::DuplicateBooking
               error_response = {
                 message: "You have already booked this event",
                 error_code: "duplicate_booking",
                 status: 409
               }
               error!(error_response, 409)
-            end
-
-            if event.remaining_tickets <= 0
+            rescue Booking::NoTicketsAvailable
               error_response = {
                 message: "No tickets available for this event",
                 error_code: "no_tickets_available",
                 status: 409
               }
               error!(error_response, 409)
-            end
-
-            begin
-              booking = Booking.create_for!(
-                user: current_user,
-                event: event
-              )
             rescue ActiveRecord::RecordNotUnique
               error_response = {
                 message: "You have already booked this event",

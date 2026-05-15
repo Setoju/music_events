@@ -1,0 +1,37 @@
+{
+  "latitude": 40.71,
+  "longitude": -74.01,
+  "generationtime_ms": 0.092,
+  "utc_offset_seconds": -14400,
+  "timezone": "America/New_York",
+  "timezone_abbreviation": "EDT",
+  "hourly_units": {
+    "time": "iso8601",
+    "temperature_2m": "°C",
+    "precipitation_probability": "%",
+    "weather_code": "wmo code",
+    "wind_speed_10m": "km/h"
+  },
+  "hourly": {
+    "time": [
+      "2026-05-15T12:00",
+      "2026-05-15T13:00"
+    ],
+    "temperature_2m": [
+      18.5,
+      19.1
+    ],
+    "precipitation_probability": [
+      0,
+      5
+    ],
+    "weather_code": [
+      0,
+      2
+    ],
+    "wind_speed_10m": [
+      11.5,
+      12.0
+    ]
+  }
+}
