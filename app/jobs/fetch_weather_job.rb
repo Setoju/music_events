@@ -4,7 +4,8 @@ class FetchWeatherJob < ApplicationJob
 
   def perform(event_id, booking_id = nil)
     event = Event.find(event_id)
-    result = WeatherProvider.fetch(event)
+    # Request forecast centered on the event start time (day of the event)
+    result = WeatherProvider.fetch(event, event.starts_at)
 
     event.ensure_context
 

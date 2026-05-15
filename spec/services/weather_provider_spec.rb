@@ -82,9 +82,8 @@ RSpec.describe WeatherProvider do
 
     it 'configures a five second timeout and retry middleware' do
       client = described_class.send(:http_client)
-
-      expect(client.options.timeout).to eq(5)
-      expect(client.options.open_timeout).to eq(5)
+      expect(client.options.timeout).to eq(10)
+      expect(client.options.open_timeout).to eq(10)
       expect(client.builder.handlers.map(&:name)).to include('Faraday::Retry::Middleware')
     end
   end

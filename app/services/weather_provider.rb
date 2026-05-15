@@ -5,10 +5,11 @@ class WeatherProvider
   HOURLY_FIELDS = 'temperature_2m,precipitation_probability,weather_code,wind_speed_10m'.freeze
 
   class << self
-    def fetch(event)
+    def fetch(event, target_time = nil)
       return error_result('Missing coordinates') if event.latitude.blank? || event.longitude.blank?
 
       3.times do |attempt|
+        Rails.logger.info("WeatherProvider: fetch attempt=#{attempt + 1} for event=#{event.id}") if defined?(Rails)
         response = request_client.get do |request|
           request.params['latitude'] = event.latitude
           request.params['longitude'] = event.longitude
@@ -17,20 +18,24 @@ class WeatherProvider
           request.params['forecast_days'] = 7
         end
 
-        return parse_response(response) if response.success?
+        return parse_response(response, target_time) if response.success?
 
         return error_result(http_error_message(response)) unless retryable_status?(response.status) && attempt < 2
-      rescue JSON::ParserError
+      rescue JSON::ParserError => e
+        Rails.logger.warn("WeatherProvider: JSON parse error: #{e.message}") if defined?(Rails)
         return error_result('Invalid JSON response')
       rescue Faraday::TimeoutError => e
+        Rails.logger.warn("WeatherProvider: Faraday timeout (attempt=#{attempt + 1}): #{e.message}") if defined?(Rails)
         next if attempt < 2
 
         return error_result("Timeout: #{e.message}")
       rescue Timeout::Error => e
+        Rails.logger.warn("WeatherProvider: Timeout::Error (attempt=#{attempt + 1}): #{e.message}") if defined?(Rails)
         next if attempt < 2
 
         return error_result("Timeout: #{e.message}")
       rescue Faraday::ConnectionFailed => e
+        Rails.logger.warn("WeatherProvider: ConnectionFailed (attempt=#{attempt + 1}): #{e.message}") if defined?(Rails)
         if timeout_exception?(e)
           next if attempt < 2
 
@@ -40,6 +45,9 @@ class WeatherProvider
         next if attempt < 2
 
         return error_result("Connection error: #{e.message}")
+      rescue StandardError => e
+        Rails.logger.error("WeatherProvider: unexpected error (attempt=#{attempt + 1}): #{e.class} #{e.message}\n#{e.backtrace&.first(5).join("\n")}") if defined?(Rails)
+        return error_result("Unexpected error: #{e.message}")
       end
 
       error_result('Unexpected: request failed')
@@ -64,18 +72,42 @@ class WeatherProvider
         end
         faraday.response :follow_redirects
         faraday.response :logger if Rails.env.development?
-        faraday.options.timeout = 5
-        faraday.options.open_timeout = 5
+        # Increase timeouts to tolerate slow provider responses in some regions
+        faraday.options.timeout = 10
+        faraday.options.open_timeout = 10
         faraday.adapter Faraday.default_adapter
       end
     end
 
-    def parse_response(response)
+    def parse_response(response, target_time = nil)
       payload = JSON.parse(response.body)
       hourly = payload['hourly'] || {}
-      time = Array(hourly['time'])
+      times = Array(hourly['time'])
 
-      list = time.first(9).each_with_index.map do |timestamp, idx|
+      if target_time
+        # For an event target_time, return the full day of hourly entries for that date
+        # Align comparisons in UTC to be robust against timezone variations in tests
+        target_date = target_time.to_time.utc.to_date
+        parsed_times = times.map { |t| Time.parse(t).utc }
+        indices = parsed_times.each_with_index.select { |tt, idx| tt.to_date == target_date }.map(&:last)
+
+        if indices.any?
+          start_idx = indices.min
+          end_idx = indices.max
+          slice = times[start_idx..end_idx] || []
+          base_idx = start_idx
+        else
+          # fallback to first 24 hours (or available entries)
+          slice = times.first(24)
+          base_idx = 0
+        end
+      else
+        slice = times.first(9)
+        base_idx = 0
+      end
+
+      list = Array(slice).each_with_index.map do |timestamp, rel_idx|
+        idx = base_idx + rel_idx
         {
           'time' => timestamp,
           'temperature_2m' => value_at(hourly, 'temperature_2m', idx),
