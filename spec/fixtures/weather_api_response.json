@@ -1,66 +1,37 @@
 {
-  "cod": "200",
-  "message": 0,
-  "cnt": 40,
-  "list": [
-    {
-      "dt": 1715688000,
-      "main": {
-        "temp": 18.5,
-        "feels_like": 18.1,
-        "temp_min": 18.5,
-        "temp_max": 18.5,
-        "pressure": 1015,
-        "humidity": 55
-      },
-      "weather": [
-        {
-          "id": 800,
-          "main": "Clear",
-          "description": "clear sky",
-          "icon": "01d"
-        }
-      ],
-      "clouds": { "all": 0 },
-      "wind": { "speed": 3.2, "deg": 120 },
-      "visibility": 10000,
-      "pop": 0,
-      "sys": { "pod": "d" },
-      "dt_txt": "2024-05-14 12:00:00"
-    },
-    {
-      "dt": 1715698800,
-      "main": {
-        "temp": 19.1,
-        "feels_like": 18.7,
-        "temp_min": 19.1,
-        "temp_max": 19.1,
-        "pressure": 1014,
-        "humidity": 52
-      },
-      "weather": [
-        {
-          "id": 801,
-          "main": "Clouds",
-          "description": "few clouds",
-          "icon": "02d"
-        }
-      ],
-      "clouds": { "all": 20 },
-      "wind": { "speed": 3.4, "deg": 130 },
-      "visibility": 10000,
-      "pop": 0,
-      "sys": { "pod": "d" },
-      "dt_txt": "2024-05-14 15:00:00"
-    }
-  ],
-  "city": {
-    "id": 5128581,
-    "name": "New York",
-    "coord": { "lat": 40.7128, "lon": -74.0060 },
-    "country": "US",
-    "timezone": -14400,
-    "sunrise": 1715682000,
-    "sunset": 1715734800
+  "latitude": 40.71,
+  "longitude": -74.01,
+  "generationtime_ms": 0.092,
+  "utc_offset_seconds": -14400,
+  "timezone": "America/New_York",
+  "timezone_abbreviation": "EDT",
+  "hourly_units": {
+    "time": "iso8601",
+    "temperature_2m": "°C",
+    "precipitation_probability": "%",
+    "weather_code": "wmo code",
+    "wind_speed_10m": "km/h"
+  },
+  "hourly": {
+    "time": [
+      "2026-05-15T12:00",
+      "2026-05-15T13:00"
+    ],
+    "temperature_2m": [
+      18.5,
+      19.1
+    ],
+    "precipitation_probability": [
+      0,
+      5
+    ],
+    "weather_code": [
+      0,
+      2
+    ],
+    "wind_speed_10m": [
+      11.5,
+      12.0
+    ]
   }
 }

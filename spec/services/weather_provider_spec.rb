@@ -3,11 +3,6 @@ require 'rails_helper'
 RSpec.describe WeatherProvider do
   let(:event) { build(:event, latitude: 40.7128, longitude: -74.0060) }
 
-  before do
-    allow(ENV).to receive(:[]).and_call_original
-    allow(ENV).to receive(:[]).with('OPENWEATHERMAP_API_KEY').and_return('test-api-key')
-  end
-
   describe '.fetch' do
     it 'returns success with weather data' do
       stub_weather_success(40.7128, -74.0060)
@@ -18,6 +13,7 @@ RSpec.describe WeatherProvider do
       expect(result[:error]).to be_nil
       expect(result[:data]['list']).to be_an(Array)
       expect(result[:data]['list'].length).to eq(2)
+      expect(result[:data]['provider']).to eq('open-meteo')
     end
 
     it 'returns an error for missing coordinates' do
@@ -47,7 +43,7 @@ RSpec.describe WeatherProvider do
     end
 
     it 'returns an error for malformed JSON' do
-      stub_request(:get, %r{api\.openweathermap\.org/data/2\.5/forecast})
+      stub_request(:get, %r{api\.open-meteo\.com/v1/forecast})
         .to_return(status: 200, body: 'not-json', headers: { 'Content-Type' => 'application/json' })
 
       result = described_class.fetch(event)
@@ -56,7 +52,7 @@ RSpec.describe WeatherProvider do
     end
 
     it 'returns an error for timeouts' do
-      stub_request(:get, %r{api\.openweathermap\.org/data/2\.5/forecast}).to_timeout
+      stub_request(:get, %r{api\.open-meteo\.com/v1/forecast}).to_timeout
 
       result = described_class.fetch(event)
 
@@ -65,7 +61,7 @@ RSpec.describe WeatherProvider do
     end
 
     it 'returns an error for connection failures' do
-      stub_request(:get, %r{api\.openweathermap\.org/data/2\.5/forecast}).to_raise(Faraday::ConnectionFailed.new('failed'))
+      stub_request(:get, %r{api\.open-meteo\.com/v1/forecast}).to_raise(Faraday::ConnectionFailed.new('failed'))
 
       result = described_class.fetch(event)
 
@@ -73,15 +69,15 @@ RSpec.describe WeatherProvider do
     end
 
     it 'retries failed requests and succeeds on the second attempt' do
-      stub_request(:get, %r{api\.openweathermap\.org/data/2\.5/forecast})
-        .to_return(status: 500, body: { message: 'Error 500' }.to_json, headers: { 'Content-Type' => 'application/json' })
+      stub_request(:get, %r{api\.open-meteo\.com/v1/forecast})
+        .to_return(status: 500, body: { reason: 'Error 500' }.to_json, headers: { 'Content-Type' => 'application/json' })
         .then
         .to_return(status: 200, body: File.read(Rails.root.join('spec/fixtures/weather_api_response.json')), headers: { 'Content-Type' => 'application/json' })
 
       result = described_class.fetch(event)
 
       expect(result[:success]).to be(true)
-      expect(WebMock).to have_requested(:get, %r{api\.openweathermap\.org/data/2\.5/forecast}).twice
+      expect(WebMock).to have_requested(:get, %r{api\.open-meteo\.com/v1/forecast}).twice
     end
 
     it 'configures a five second timeout and retry middleware' do

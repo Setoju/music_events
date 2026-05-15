@@ -1,19 +1,20 @@
 require 'json'
 
 class WeatherProvider
-  API_URL = 'https://api.openweathermap.org/data/2.5/forecast'
+  API_URL = 'https://api.open-meteo.com/v1/forecast'
+  HOURLY_FIELDS = 'temperature_2m,precipitation_probability,weather_code,wind_speed_10m'.freeze
 
   class << self
     def fetch(event)
       return error_result('Missing coordinates') if event.latitude.blank? || event.longitude.blank?
-      return error_result('Missing API key') if api_key.blank?
 
       3.times do |attempt|
         response = request_client.get do |request|
-          request.params['lat'] = event.latitude
-          request.params['lon'] = event.longitude
-          request.params['appid'] = api_key
-          request.params['units'] = 'metric'
+          request.params['latitude'] = event.latitude
+          request.params['longitude'] = event.longitude
+          request.params['hourly'] = HOURLY_FIELDS
+          request.params['timezone'] = 'auto'
+          request.params['forecast_days'] = 7
         end
 
         return parse_response(response) if response.success?
@@ -71,19 +72,41 @@ class WeatherProvider
 
     def parse_response(response)
       payload = JSON.parse(response.body)
-      payload['list'] = Array(payload['list']).first(9)
-      success_result(payload)
-    end
+      hourly = payload['hourly'] || {}
+      time = Array(hourly['time'])
 
-    def api_key
-      ENV['OPENWEATHERMAP_API_KEY']
+      list = time.first(9).each_with_index.map do |timestamp, idx|
+        {
+          'time' => timestamp,
+          'temperature_2m' => value_at(hourly, 'temperature_2m', idx),
+          'precipitation_probability' => value_at(hourly, 'precipitation_probability', idx),
+          'weather_code' => value_at(hourly, 'weather_code', idx),
+          'wind_speed_10m' => value_at(hourly, 'wind_speed_10m', idx)
+        }
+      end
+
+      success_result(
+        {
+          'provider' => 'open-meteo',
+          'latitude' => payload['latitude'],
+          'longitude' => payload['longitude'],
+          'timezone' => payload['timezone'],
+          'hourly_units' => payload['hourly_units'] || {},
+          'list' => list
+        }
+      )
     end
 
     def http_error_message(response)
       parsed_body = JSON.parse(response.body)
-      parsed_body['message'].presence || "HTTP #{response.status}"
+      parsed_body['reason'].presence || parsed_body['message'].presence || "HTTP #{response.status}"
     rescue JSON::ParserError
       "HTTP #{response.status}"
+    end
+
+    def value_at(hourly, key, index)
+      values = Array(hourly[key])
+      values[index]
     end
 
     def response_from_exception(exception)
