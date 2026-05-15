@@ -42,6 +42,54 @@ module V1
         present event, with: Entities::Event
       end
 
+      desc "Trigger a manual weather fetch for an event (booked users only).",
+           success: { code: 202 }
+      params do
+        requires :id, type: Integer
+      end
+      post ":id/fetch_weather" do
+        authenticate!
+
+        event = Event.find(params[:id])
+
+        booking = current_user.bookings.find_by(event_id: event.id)
+        unless booking
+          error_response = {
+            message: "You must have a booking for this event to fetch weather",
+            error_code: "not_booked",
+            status: 403
+          }
+          error!(error_response, 403)
+        end
+
+        # only allow manual fetches within one week of event start
+        if event.starts_at > 7.days.from_now || event.starts_at <= Time.current
+          error_response = {
+            message: "Manual weather fetch is allowed only within 7 days before the event",
+            error_code: "fetch_window",
+            status: 422
+          }
+          error!(error_response, 422)
+        end
+
+        # rate limit: once per day per booking
+        if booking.last_weather_fetch_at.present? && booking.last_weather_fetch_at > 24.hours.ago
+          error_response = {
+            message: "Manual weather fetch already performed within the last 24 hours",
+            error_code: "fetch_rate_limited",
+            status: 429
+          }
+          error!(error_response, 429)
+        end
+
+        # record fetch timestamp and enqueue job
+        booking.update!(last_weather_fetch_at: Time.current)
+        FetchWeatherJob.perform_later(event.id)
+
+        status 202
+        { message: "Weather fetch queued" }
+      end
+
       desc "Create an event",
          success: { code: 201, entity: Entities::Event, is_array: false }
       params do
