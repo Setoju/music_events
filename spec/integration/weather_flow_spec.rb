@@ -49,7 +49,9 @@ RSpec.describe 'Weather flow', type: :request do
 
       expect(response).to have_http_status(:ok)
       body = JSON.parse(response.body)
-      expect(body).not_to have_key('weather')
+      expect(body["weather"]).to be_present
+      expect(body["weather"]["weather_status"]).to eq('failed')
+      expect(body["weather"]["weather_error_code"]).to be_a(String)
     end
   end
 

@@ -17,5 +17,9 @@ module Entities
     expose :weather_error_code, documentation: { type: 'string', desc: 'Canonical short error code or null' } do |context, _|
       context.respond_to?(:weather_error_code) ? context.weather_error_code : nil
     end
+
+    expose :forecast, if: ->(context, _) { context.weather_status == 'success' && context.weather_data.present? } do |context, _|
+      context.weather_data
+    end
   end
 end
